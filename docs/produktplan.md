@@ -305,3 +305,14 @@ Etter fire uker vurderes MVP-en ut fra:
 7. Legg til planlagte mandags- og søndagsmeldinger.
 8. Kjør en intern prøveperiode på fire uker før leveranse 2 prioriteres.
 
+## 16. Teknisk grunnretning
+
+- TypeScript på en støttet Node.js LTS-versjon.
+- Slack Bolt for JavaScript med Socket Mode under lokal utvikling.
+- SQLite som første datalager.
+- Domeneregler holdes adskilt fra Slack-håndtering og datalagring.
+- Docker Compose er den eneste påkrevde lokale utviklingsavhengigheten.
+- Node, npm-avhengigheter og SQLite-data ligger i containere eller navngitte
+  Docker-volumer.
+- Kildekode monteres inn i utviklingscontaineren for rask tilbakemelding.
+- Hemmeligheter lagres bare i en ignorert `.env`-fil og aldri i Git.
