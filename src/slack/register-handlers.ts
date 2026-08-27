@@ -1,8 +1,11 @@
 import type { App } from "@slack/bolt";
 import { isActivityType, validateActivity, type ActivityInput } from "../domain/activity.js";
 import type { ActivityRepository } from "../storage/activity-repository.js";
+import { calculateWeeklyProgress } from "../domain/weekly-progress.js";
+import { osloWeek } from "../domain/week.js";
 import { activityMessage } from "./activity-message.js";
 import { activityModal, LOG_ACTIVITY_CALLBACK_ID } from "./activity-modal.js";
+import { groupStatusMessage, personalStatusMessage } from "./progress-messages.js";
 
 function osloDate(): string {
   return new Intl.DateTimeFormat("en-CA", {
@@ -16,6 +19,9 @@ function osloDate(): string {
 interface HandlerDependencies {
   repository: ActivityRepository;
   pustChannelId: string;
+  groupMemberCount: number;
+  weeklyParticipantGoal: number;
+  weeklyMinutesGoal: number;
 }
 
 export function registerSlackHandlers(app: App, dependencies: HandlerDependencies): void {
@@ -27,6 +33,34 @@ export function registerSlackHandlers(app: App, dependencies: HandlerDependencie
       await client.views.open({
         trigger_id: command.trigger_id,
         view: activityModal(command.user_id, osloDate()),
+      });
+      return;
+    }
+
+    if (subcommand === "status") {
+      const range = osloWeek();
+      const progress = calculateWeeklyProgress(
+        dependencies.repository.listBetween(range.start, range.end),
+      );
+      await respond({
+        response_type: "in_channel",
+        text: groupStatusMessage({
+          progress,
+          range,
+          memberCount: dependencies.groupMemberCount,
+          participantGoal: dependencies.weeklyParticipantGoal,
+          minutesGoal: dependencies.weeklyMinutesGoal,
+        }),
+      });
+      return;
+    }
+
+    if (subcommand === "meg") {
+      await respond({
+        response_type: "ephemeral",
+        text: personalStatusMessage(
+          dependencies.repository.totalSparksForParticipant(command.user_id),
+        ),
       });
       return;
     }

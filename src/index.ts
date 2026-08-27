@@ -12,7 +12,13 @@ const app = new App({
 });
 
 const repository = new ActivityRepository(config.databasePath);
-registerSlackHandlers(app, { repository, pustChannelId: config.pustChannelId });
+registerSlackHandlers(app, {
+  repository,
+  pustChannelId: config.pustChannelId,
+  groupMemberCount: config.groupMemberCount,
+  weeklyParticipantGoal: config.weeklyParticipantGoal,
+  weeklyMinutesGoal: config.weeklyMinutesGoal,
+});
 
 await app.start();
 app.logger.info("🌬️ Pust er i gang!");

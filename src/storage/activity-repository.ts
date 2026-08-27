@@ -78,6 +78,24 @@ export class ActivityRepository {
       | undefined;
     return row ? mapRow(row) : null;
   }
+
+  listBetween(startDate: string, endDate: string): Activity[] {
+    const rows = this.database.prepare(`
+      SELECT * FROM activities
+      WHERE activity_date BETWEEN ? AND ?
+      ORDER BY activity_date, created_at
+    `).all(startDate, endDate) as unknown as ActivityRow[];
+    return rows.map(mapRow);
+  }
+
+  totalSparksForParticipant(participantSlackId: string): number {
+    const row = this.database.prepare(`
+      SELECT COALESCE(SUM(minutes), 0) AS total
+      FROM activities
+      WHERE participant_slack_id = ?
+    `).get(participantSlackId) as { total: number };
+    return row.total;
+  }
 }
 
 function mapRow(row: ActivityRow): Activity {
@@ -93,4 +111,3 @@ function mapRow(row: ActivityRow): Activity {
     createdAt: row.created_at,
   };
 }
-

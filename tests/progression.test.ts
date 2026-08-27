@@ -4,6 +4,8 @@ import { levelProgress } from "../src/domain/levels.js";
 import { calculateWeeklyProgress } from "../src/domain/weekly-progress.js";
 import { activityMessage } from "../src/slack/activity-message.js";
 import { ActivityRepository } from "../src/storage/activity-repository.js";
+import { osloWeek } from "../src/domain/week.js";
+import { groupStatusMessage, personalStatusMessage } from "../src/slack/progress-messages.js";
 
 describe("Sparks", () => {
   it("awards one Spark per qualifying minute", () => {
@@ -75,5 +77,29 @@ describe("activity persistence and messaging", () => {
     expect(repository.findById(activity.id)).toEqual(activity);
     expect(activityMessage(activity)).toContain("Registrert med hjelp fra <@U1>");
     expect(activityMessage(activity)).toContain("+40 Sparks");
+    expect(repository.listBetween("2026-08-24", "2026-08-30")).toEqual([activity]);
+    expect(repository.totalSparksForParticipant("U2")).toBe(40);
+  });
+});
+
+describe("status", () => {
+  it("uses Monday through Sunday in Oslo", () => {
+    expect(osloWeek(new Date("2026-08-27T12:00:00Z"))).toEqual({
+      start: "2026-08-24",
+      end: "2026-08-30",
+    });
+  });
+
+  it("shows cooperative group and personal progress", () => {
+    const message = groupStatusMessage({
+      progress: { participants: 3, totalMinutes: 210, qualifyingMinutes: 190, distanceKm: 12.5 },
+      range: { start: "2026-08-24", end: "2026-08-30" },
+      memberCount: 14,
+      participantGoal: 4,
+      minutesGoal: 240,
+    });
+    expect(message).toContain("3/4 deltakere");
+    expect(message).toContain("190/240 minutter");
+    expect(personalStatusMessage(350)).toContain("Stifinner");
   });
 });
