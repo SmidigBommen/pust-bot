@@ -8,11 +8,11 @@ uten å rangere kolleger mot hverandre.
 
 Pust kombinerer tre former for progresjon:
 
-1. **Personlig progresjon:** Sparks, nivåer, prestasjoner og ukerytme.
+1. **Personlig progresjon:** Sparks, nivåer, prestasjoner og ukentlig streak.
 2. **Små fellesskap:** Frivillige Pustelag med samarbeidsbaserte mål.
 3. **Hele Gnist:** Adaptive mål for deltakelse og aktivitetsminutter i `#pust`.
 
-En aktivitet kan dermed bidra til personlig rytme, alle aktuelle Pustelag og
+En aktivitet kan dermed bidra til personlig streak, alle aktuelle Pustelag og
 Gnists felles Pust samtidig.
 
 ## 2. Produktprinsipper
@@ -105,10 +105,10 @@ Foreløpig nivåkurve:
 Pustemester er ikke et endelig tak. Flere nivåer og sesongprestasjoner kan
 legges til etter at faktisk bruk er kjent.
 
-### 5.3 Personlig ukerytme
+### 5.3 Personlig streak
 
-En personlig rytme fortsetter når medlemmet registrerer minst én kvalifiserende
-aktivitet i løpet av uken. Rytmen er ukentlig, ikke daglig. En avsluttet rytme
+En personlig streak fortsetter når medlemmet registrerer minst én kvalifiserende
+aktivitet i løpet av uken. Streaken er ukentlig, ikke daglig. En avsluttet streak
 fjerner aldri Sparks, nivå eller prestasjoner.
 
 ## 6. Gruppens Pust
@@ -118,7 +118,7 @@ Gruppen har to parallelle ukesmål:
 1. Antall medlemmer som har registrert minst én kvalifiserende aktivitet.
 2. Samlet antall kvalifiserende aktivitetsminutter.
 
-Begge målene må nås for å videreføre gruppens ukerytme. Ved oppstart foreslås:
+Begge målene må nås for å videreføre gruppens streak. Ved oppstart foreslås:
 
 - Deltakelse: 4 av 14 medlemmer.
 - Aktivitet: 240 minutter totalt.
@@ -154,7 +154,7 @@ Pustelag er frivillige, samarbeidsbaserte grupper innenfor `#pust`.
 - Et medlem kan være med i flere Pustelag.
 - Én aktivitet bidrar automatisk til alle aktuelle lag.
 - Det finnes ingen intern rangering.
-- Ferie- eller sykdomspause skal kunne beskytte lagets rytme.
+- Ferie- eller sykdomspause skal kunne beskytte lagets streak.
 
 Pustelag inngår i andre leveranse etter at kjernen er prøvd i praksis.
 
@@ -163,7 +163,7 @@ Pustelag inngår i andre leveranse etter at kjernen er prøvd i praksis.
 Første lansering bør ha noen få synlige og overraskende prestasjoner:
 
 - **Første pust:** Registrer første aktivitet.
-- **God rytme:** Fire uker med personlig rytme.
+- **Fire på rad:** Oppnå en personlig streak på fire uker.
 - **Ny sti:** Registrer tre ulike aktivitetstyper.
 - **Medhjelper:** Hjelp noen med deres første registrering.
 - **Alle med:** Nå kanalens deltakelsesmål.
@@ -243,7 +243,7 @@ Slack-administratorene utpeker to eller tre Pust-voktere. De kan:
 - Justere eller pause adaptive ukesmål.
 - Håndtere feilregistreringer og sletting.
 - Fjerne arrangementer.
-- Pause rytmer ved ferie og høytider.
+- Pause streaks ved ferie og høytider.
 - Se enkel bruks- og gruppestatistikk.
 - Endre botens meldingsfrekvens.
 
@@ -260,7 +260,7 @@ til skjulte personopplysninger eller mulighet til å endre Sparks vilkårlig.
 - Kanalinnlegg og privat varsel ved assistert registrering.
 - Redigering og sletting.
 - Sparks og de første nivåene.
-- Personlig ukerytme.
+- Personlig ukentlig streak.
 - Gruppemål for deltakelse og minutter.
 - Mandagsstart og søndagsoppsummering.
 - Fire til seks enkle prestasjoner.
@@ -289,7 +289,7 @@ Etter fire uker vurderes MVP-en ut fra:
 - Flere medlemmer har prøvd Pust enn de 3–4 som poster i dag.
 - En aktivitet kan registreres uten forklaring fra en utvikler.
 - Assistert registrering oppleves som trygg og forståelig.
-- Medlemmene forstår forskjellen mellom Sparks, personlig rytme og gruppens Pust.
+- Medlemmene forstår forskjellen mellom Sparks, personlig streak og gruppens Pust.
 - Kanalinnleggene oppleves som oppmuntrende og ikke støyende.
 - Ingen opplever offentlig rangering eller press til å dele helseopplysninger.
 - Pust-voktere kan rette feil uten utviklerhjelp.
@@ -298,10 +298,10 @@ Etter fire uker vurderes MVP-en ut fra:
 
 1. Velg teknisk plattform, datalager og driftsmiljø.
 2. Definer Slack-appens tillatelser og hendelser etter minste-tilgang-prinsippet.
-3. Modellér medlemmer, aktiviteter, Sparks, nivåer, rytmer og prestasjoner.
+3. Modellér medlemmer, aktiviteter, Sparks, nivåer, streaks og prestasjoner.
 4. Lag aktivitetsmodalen og publisering til `#pust`.
 5. Implementer redigering, sletting og assistert registrering.
-6. Implementer beregning av personlig og felles ukerytme.
+6. Implementer beregning av personlig og felles ukentlig streak.
 7. Legg til planlagte mandags- og søndagsmeldinger.
 8. Kjør en intern prøveperiode på fire uker før leveranse 2 prioriteres.
 
