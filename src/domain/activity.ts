@@ -42,6 +42,7 @@ export interface ActivityInput {
 export interface Activity extends ActivityInput {
   id: string;
   createdAt: string;
+  slackMessageTs?: string;
 }
 
 export function isQualifyingActivity(minutes: number): boolean {

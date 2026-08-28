@@ -30,3 +30,6 @@ lagrede Pust-dataene med vilje skal slettes.
 
 Slack-appen opprettes fra `slack-manifest.json`. Lokal kjøring bruker Socket Mode,
 slik at det ikke kreves en offentlig HTTP-adresse.
+
+Bruk [Slack-testplanen](docs/slack-testplan.md) ved manuell verifisering av en ny
+versjon.

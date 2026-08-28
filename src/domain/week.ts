@@ -20,6 +20,16 @@ export function osloWeek(date = new Date()): DateRange {
   return { start: isoDate(monday), end: isoDate(sunday) };
 }
 
+export function previousWeek(range: DateRange): DateRange {
+  const start = new Date(`${range.start}T00:00:00Z`);
+  const previousMonday = addUtcDays(start, -7);
+  return { start: isoDate(previousMonday), end: isoDate(addUtcDays(previousMonday, 6)) };
+}
+
+export function weekContaining(date: string): DateRange {
+  return osloWeek(new Date(`${date}T12:00:00Z`));
+}
+
 function addUtcDays(date: Date, days: number): Date {
   const result = new Date(date);
   result.setUTCDate(result.getUTCDate() + days);
@@ -29,4 +39,3 @@ function addUtcDays(date: Date, days: number): Date {
 function isoDate(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
-
