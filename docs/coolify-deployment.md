@@ -1,0 +1,133 @@
+# Deployere Pust med Coolify
+
+Pust bruker Slack Socket Mode og kjører derfor som en bakgrunnsprosess. Serveren
+trenger utgående HTTPS/WebSocket-tilgang til Slack på port 443, men Pust trenger
+ikke et offentlig domene, en inngående port eller en reverse proxy-rute.
+
+## Forutsetninger
+
+- En server med Docker og Coolify.
+- Utgående tilgang til Slack på port 443.
+- Korrekt systemtid på serveren.
+- GitHub-repositoriet `SmidigBommen/pust-bot` tilgjengelig for Coolify.
+- Slack-appen installert i riktig workspace.
+- Gyldig bot-token, app-token og kanal-ID.
+
+## Produksjonskonfigurasjon
+
+Utviklingsfilen `compose.yaml` skal ikke brukes direkte i Coolify. Den monterer
+kildekode og kjører utviklingsverktøy. Produksjon skal bruke en separat
+`compose.coolify.yaml` som:
+
+- Bygger `production`-steget i `Dockerfile`.
+- Kjører den kompilerte appen med `npm start`.
+- Ikke monterer kildekoden.
+- Bruker et vedvarende volum for `/app/data`.
+- Krever Slack-hemmelighetene før deploy starter.
+- Starter containeren på nytt ved feil.
+- Kjører nøyaktig én instans.
+
+Planlagt Compose-definisjon:
+
+```yaml
+services:
+  app:
+    build:
+      context: .
+      target: production
+    environment:
+      SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN:?}
+      SLACK_APP_TOKEN: ${SLACK_APP_TOKEN:?}
+      SLACK_PUST_CHANNEL_ID: ${SLACK_PUST_CHANNEL_ID:?}
+      DATABASE_PATH: /app/data/pust.sqlite
+      PUST_GROUP_MEMBER_COUNT: ${PUST_GROUP_MEMBER_COUNT:-14}
+      PUST_WEEKLY_PARTICIPANT_GOAL: ${PUST_WEEKLY_PARTICIPANT_GOAL:-4}
+      PUST_WEEKLY_MINUTES_GOAL: ${PUST_WEEKLY_MINUTES_GOAL:-240}
+    volumes:
+      - pust_data:/app/data
+    restart: unless-stopped
+    init: true
+
+volumes:
+  pust_data:
+```
+
+Før filen tas i bruk må produksjonsimaget verifiseres å kunne skrive til
+`/app/data` som den ikke-priviligerte `node`-brukeren.
+
+## Publiser Git-repositoriet
+
+De lokale commitene må pushes til GitHub før Coolify kan hente dem. For et privat
+repository kobles Coolify til GitHub med enten:
+
+- Coolify GitHub App, eller
+- En GitHub deploy key.
+
+Deploy skal følge `main`-branchen.
+
+## Opprett ressursen i Coolify
+
+1. Opprett eller velg prosjekt og produksjonsmiljø.
+2. Legg til en ny ressurs fra GitHub-repositoriet.
+3. Velg `main` som branch.
+4. Velg Docker Compose som build pack.
+5. Sett Compose location til `/compose.coolify.yaml`.
+6. Ikke konfigurer domene eller offentlig port.
+7. Behold én app-instans.
+
+Pust skal ikke skaleres horisontalt mens den bruker SQLite. Flere samtidige
+instanser kan behandle samme Slack-hendelse eller konkurrere om datalageret.
+
+## Miljøvariabler i Coolify
+
+Følgende lagres som runtime-variabler i Coolify, aldri i Git:
+
+```text
+SLACK_BOT_TOKEN=xoxb-...
+SLACK_APP_TOKEN=xapp-...
+SLACK_PUST_CHANNEL_ID=C...
+PUST_GROUP_MEMBER_COUNT=14
+PUST_WEEKLY_PARTICIPANT_GOAL=4
+PUST_WEEKLY_MINUTES_GOAL=240
+```
+
+Den lokale `.env`-filen skal ikke lastes opp. Den er ignorert av Git.
+
+## Vedvarende lagring og backup
+
+SQLite ligger i `/app/data/pust.sqlite`. Compose-volumet `pust_data` må bevares
+ved deploy og omstart. Hvis volumet fjernes, forsvinner aktiviteter, Sparks,
+streaks og registrerte prestasjoner.
+
+Før pilotlansering skal det etableres regelmessig backup av volumet eller
+SQLite-filen. En restore-prosedyre bør testes minst én gang. Deploy skal aldri
+kjøres med `docker compose down -v` mot produksjonsmiljøet.
+
+## Første deploy
+
+1. Bygg produksjonsimaget lokalt.
+2. Kjør automatiserte tester og typesjekk.
+3. Push den validerte commit-en til GitHub.
+4. Legg inn miljøvariablene i Coolify.
+5. Deploy ressursen.
+6. Kontroller Coolify-loggene for `Pust er i gang`.
+7. Kjør `/pust hjelp`, `/pust logg`, `/pust meg` og `/pust status` i Slack.
+8. Start containeren på nytt og bekreft at data fortsatt finnes.
+9. Følg den komplette [Slack-testplanen](slack-testplan.md).
+
+## Oppdateringer og rollback
+
+- Deploy bare validerte commits fra `main`.
+- Ta backup før databasemigrasjoner eller større versjonsendringer.
+- Bruk Coolifys deployment-logg ved feil.
+- Rull tilbake til forrige fungerende commit dersom ny versjon ikke starter.
+- Ikke slett eller opprett `pust_data` på nytt under rollback.
+
+## Referanser
+
+- [Slack: Using Socket Mode](https://docs.slack.dev/tools/bolt-js/concepts/socket-mode)
+- [Coolify: Docker Compose](https://coolify.io/docs/knowledge-base/docker/compose)
+- [Coolify: Applications](https://coolify.io/docs/applications/index)
+- [Coolify: Environment Variables](https://coolify.io/docs/knowledge-base/environment-variables)
+- [Coolify: Persistent Storage](https://coolify.io/docs/knowledge-base/persistent-storage)
+
