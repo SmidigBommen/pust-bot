@@ -1,0 +1,34 @@
+services:
+  app:
+    build:
+      context: .
+      target: production
+    environment:
+      SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN:?}
+      SLACK_APP_TOKEN: ${SLACK_APP_TOKEN:?}
+      SLACK_PUST_CHANNEL_ID: ${SLACK_PUST_CHANNEL_ID:?}
+      DATABASE_PATH: /app/data/pust.sqlite
+      BACKUP_DIRECTORY: /app/data/backups
+      HEALTH_PORT: 3000
+      PUST_GROUP_MEMBER_COUNT: ${PUST_GROUP_MEMBER_COUNT:-14}
+      PUST_WEEKLY_PARTICIPANT_GOAL: ${PUST_WEEKLY_PARTICIPANT_GOAL:-4}
+      PUST_WEEKLY_MINUTES_GOAL: ${PUST_WEEKLY_MINUTES_GOAL:-240}
+    volumes:
+      - pust_data:/app/data
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    restart: unless-stopped
+    stop_grace_period: 20s
+    init: true
+
+volumes:
+  pust_data:
+

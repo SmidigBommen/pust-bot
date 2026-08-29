@@ -27,7 +27,7 @@ kildekode og kjører utviklingsverktøy. Produksjon skal bruke en separat
 - Starter containeren på nytt ved feil.
 - Kjører nøyaktig én instans.
 
-Planlagt Compose-definisjon:
+Produksjonsdefinisjonen ligger i `compose.coolify.yaml` og følger denne formen:
 
 ```yaml
 services:
@@ -52,8 +52,10 @@ volumes:
   pust_data:
 ```
 
-Før filen tas i bruk må produksjonsimaget verifiseres å kunne skrive til
-`/app/data` som den ikke-priviligerte `node`-brukeren.
+Produksjonsimaget oppretter `/app/data` med eierskap til den ikke-priviligerte
+`node`-brukeren. Compose inneholder også en intern health check og kontrollert
+stopptid. Health-endepunktet bindes bare til `127.0.0.1` inne i containeren og
+eksponeres ikke offentlig.
 
 ## Publiser Git-repositoriet
 
@@ -103,6 +105,15 @@ Før pilotlansering skal det etableres regelmessig backup av volumet eller
 SQLite-filen. En restore-prosedyre bør testes minst én gang. Deploy skal aldri
 kjøres med `docker compose down -v` mot produksjonsmiljøet.
 
+Opprett en konsistent og integritetskontrollert SQLite-backup med:
+
+```bash
+docker compose -f compose.coolify.yaml exec app npm run backup
+```
+
+Backupen lagres under `/app/data/backups` i det samme vedvarende volumet. For
+katastrofesikring må denne katalogen i tillegg kopieres til ekstern lagring.
+
 ## Første deploy
 
 1. Bygg produksjonsimaget lokalt.
@@ -130,4 +141,3 @@ kjøres med `docker compose down -v` mot produksjonsmiljøet.
 - [Coolify: Applications](https://coolify.io/docs/applications/index)
 - [Coolify: Environment Variables](https://coolify.io/docs/knowledge-base/environment-variables)
 - [Coolify: Persistent Storage](https://coolify.io/docs/knowledge-base/persistent-storage)
-

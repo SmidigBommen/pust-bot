@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { sparksForActivity } from "../src/domain/activity.js";
 import { levelProgress } from "../src/domain/levels.js";
@@ -11,6 +14,8 @@ import { deleteActivityModal } from "../src/slack/delete-activity-modal.js";
 import { editActivityModal, selectEditActivityModal } from "../src/slack/edit-activity-modal.js";
 import { groupWeeklyStreak, personalWeeklyStreak } from "../src/domain/streaks.js";
 import { earnedAchievements } from "../src/domain/achievements.js";
+import { createBackup } from "../src/backup.js";
+import { startHealthServer, stopHealthServer } from "../src/health-server.js";
 
 describe("Sparks", () => {
   it("awards one Spark per qualifying minute", () => {
@@ -223,5 +228,44 @@ describe("achievements", () => {
     expect(earned).toEqual(["first_breath", "new_trail", "four_in_a_row"]);
     expect(repository.awardAchievement("U1", "first_breath")).toBe(true);
     expect(repository.awardAchievement("U1", "first_breath")).toBe(false);
+  });
+});
+
+describe("production operations", () => {
+  it("serves an internal health response", async () => {
+    const server = await startHealthServer(0);
+    try {
+      const address = server.address();
+      if (!address || typeof address === "string") throw new Error("Mangler testport");
+      const response = await fetch(`http://127.0.0.1:${address.port}/health`);
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ status: "ok" });
+    } finally {
+      await stopHealthServer(server);
+    }
+  });
+
+  it("creates an integrity-checked SQLite backup", async () => {
+    const directory = mkdtempSync(join(tmpdir(), "pust-backup-test-"));
+    try {
+      const databasePath = join(directory, "pust.sqlite");
+      const repository = new ActivityRepository(databasePath);
+      repository.create({
+        participantSlackId: "U1",
+        registeredBySlackId: "U1",
+        type: "walk_hike",
+        minutes: 30,
+        activityDate: "2026-08-29",
+      });
+      const destination = await createBackup(
+        databasePath,
+        join(directory, "backups"),
+        new Date("2026-08-29T12:00:00Z"),
+      );
+      expect(destination).toContain("pust-2026-08-29T12-00-00Z.sqlite");
+      expect(new ActivityRepository(destination).totalSparksForParticipant("U1")).toBe(30);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
   });
 });

@@ -6,6 +6,7 @@ export interface Config {
   groupMemberCount: number;
   weeklyParticipantGoal: number;
   weeklyMinutesGoal: number;
+  healthPort: number;
 }
 
 function required(name: string): string {
@@ -23,6 +24,7 @@ export function loadConfig(): Config {
     groupMemberCount: numberSetting("PUST_GROUP_MEMBER_COUNT", 14),
     weeklyParticipantGoal: numberSetting("PUST_WEEKLY_PARTICIPANT_GOAL", 4),
     weeklyMinutesGoal: numberSetting("PUST_WEEKLY_MINUTES_GOAL", 240),
+    healthPort: numberSetting("HEALTH_PORT", 3000),
   };
 }
 

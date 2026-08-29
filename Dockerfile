@@ -20,8 +20,16 @@ ENV NODE_ENV=production
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-RUN npm install --omit=dev && npm cache clean --force
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gosu \
+    && rm -rf /var/lib/apt/lists/* \
+    && npm install --omit=dev \
+    && npm cache clean --force
 COPY --from=build /app/dist ./dist
+COPY docker-entrypoint.sh /usr/local/bin/pust-entrypoint
+RUN chmod +x /usr/local/bin/pust-entrypoint \
+    && mkdir -p /app/data \
+    && chown node:node /app/data
 
-USER node
-CMD ["npm", "start"]
+ENTRYPOINT ["pust-entrypoint"]
+CMD ["node", "dist/index.js"]
