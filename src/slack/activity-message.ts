@@ -21,7 +21,7 @@ export function activityMessage(activity: Activity): string {
     details.join(" · "),
     activity.comment ? `«${activity.comment}»` : null,
     assisted ? `Registrert med hjelp fra <@${activity.registeredBySlackId}>` : null,
-    `⚡ *+${sparksForActivity(activity.minutes)} Sparks* · 🌬️ Aktiviteten styrker Gnists felles Pust.`,
+    `⚡ *+${sparksForActivity(activity.minutes)} Sparks*`,
   ]
     .filter((line): line is string => line !== null)
     .join("\n");
@@ -30,4 +30,3 @@ export function activityMessage(activity: Activity): string {
 function formatDistance(distanceKm: number): string {
   return new Intl.NumberFormat("nb-NO", { maximumFractionDigits: 2 }).format(distanceKm);
 }
-
