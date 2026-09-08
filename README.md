@@ -34,5 +34,5 @@ slik at det ikke kreves en offentlig HTTP-adresse.
 Bruk [Slack-testplanen](docs/slack-testplan.md) ved manuell verifisering av en ny
 versjon.
 
-Se [Coolify-runbooken](docs/coolify-deployment.md) for planlagt produksjonsoppsett,
+Se [Coolify-runbooken](docs/coolify-deployment.md) for produksjonsoppsett,
 hemmeligheter, vedvarende SQLite-lagring, backup og deploy-prosedyre.

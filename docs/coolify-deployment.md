@@ -4,6 +4,41 @@ Pust bruker Slack Socket Mode og kjører derfor som en bakgrunnsprosess. Servere
 trenger utgående HTTPS/WebSocket-tilgang til Slack på port 443, men Pust trenger
 ikke et offentlig domene, en inngående port eller en reverse proxy-rute.
 
+## Eksisterende ressurs og automatisk deploy
+
+Verifisert 8. september 2026:
+
+- Coolify: `https://coolify.smidigbommen.no`.
+- Applikasjon: `pust-bot:main-todcnoob5xfedhjehtdiad4e`.
+- UUID: `rp9shkdgtpcc10vccy5xyna5`.
+- Repository: `SmidigBommen/pust-bot`, branch `main`.
+- Build pack: Docker Compose, fil `/compose.coolify.yaml`.
+- Ressursen kjører allerede med vedvarende data. Bruk denne ressursen ved deploy.
+
+Auto Deploy er aktivert, og GitHub-signaturhemmeligheten er konfigurert i Coolify.
+GitHub-webhooken er lagret med følgende oppsett:
+
+- Repository → Settings → Webhooks → Add webhook.
+- Payload URL: `https://coolify.smidigbommen.no/webhooks/source/github/events/manual`.
+- Content type: `application/json`.
+- Secret: samme signaturhemmelighet som i Coolify, aldri API-tokenet.
+- Behold SSL-verifisering, velg bare push-hendelser og aktiver webhooken.
+- Hvis denne URL-en allerede finnes som webhook, oppdater den eksisterende.
+
+Kjør typesjekk og tester før push til `main`. Webhooken venter ikke på CI.
+En vellykket verifisering krever en deployment for den pushede commit-en med
+`is_webhook: true`, `is_api: false`, status `finished` og appstatus
+`running:healthy`. Compose kontrollerer `/health` internt i containeren.
+Slack-funksjonene verifiseres med Slack-testplanen.
+
+API-tilgang fra denne Mac-en bruker `COOLIFY_API_TOKEN` fra et nytt interaktivt
+zsh-login-shell. Tokenet skal ikke lagres i repoet. Bruk
+`GET /api/v1/deployments/applications/rp9shkdgtpcc10vccy5xyna5?take=3` for å
+finne jobben, og `GET /api/v1/deployments/{deployment_uuid}` for å følge den.
+Ikke start en egen API-deploy for å verifisere webhooken.
+
+Se [Coolifys webhook-guide](https://next.coolify.io/docs/applications/deployments/manual-webhooks).
+
 ## Forutsetninger
 
 - En server med Docker og Coolify.
