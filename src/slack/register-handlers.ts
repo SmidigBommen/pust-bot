@@ -284,7 +284,7 @@ export function registerSlackHandlers(app: App, dependencies: HandlerDependencie
         await client.chat.update({
           channel: dependencies.pustChannelId,
           ts: updated.slackMessageTs,
-          text: `${activityMessage(updated)}\n_Redigert av <@${body.user.id}>_`,
+          text: `${activityMessage(updated)} · _Redigert av <@${body.user.id}>_`,
         });
       }
     } catch (error) {

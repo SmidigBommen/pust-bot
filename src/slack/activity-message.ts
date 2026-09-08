@@ -15,16 +15,14 @@ export function activityMessage(activity: Activity): string {
   const assisted = activity.participantSlackId !== activity.registeredBySlackId;
   const details = [`${activity.minutes} minutter`];
   if (activity.distanceKm !== undefined) details.push(`${formatDistance(activity.distanceKm)} km`);
+  details.push(`⚡ *+${sparksForActivity(activity.minutes)} Sparks*`);
+  if (activity.comment) details.push(`«${activity.comment.replace(/\s*\r?\n\s*/g, " ")}»`);
+  if (assisted) details.push(`Registrert med hjelp fra <@${activity.registeredBySlackId}>`);
 
   return [
     `${activityEmoji[activity.type]} *<@${activity.participantSlackId}> har registrert ${activityLabels[activity.type].toLocaleLowerCase("nb-NO")}!*`,
     details.join(" · "),
-    activity.comment ? `«${activity.comment}»` : null,
-    assisted ? `Registrert med hjelp fra <@${activity.registeredBySlackId}>` : null,
-    `⚡ *+${sparksForActivity(activity.minutes)} Sparks*`,
-  ]
-    .filter((line): line is string => line !== null)
-    .join("\n");
+  ].join("\n");
 }
 
 function formatDistance(distanceKm: number): string {
