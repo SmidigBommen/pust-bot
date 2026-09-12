@@ -23,6 +23,7 @@
       "bot": [
         "chat:write",
         "commands",
+        "files:read",
         "users:read"
       ]
     }
@@ -36,4 +37,3 @@
     "token_rotation_enabled": false
   }
 }
-

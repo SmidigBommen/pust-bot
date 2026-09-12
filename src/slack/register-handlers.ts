@@ -6,6 +6,7 @@ import { osloWeek } from "../domain/week.js";
 import { groupWeeklyStreak, personalWeeklyStreak } from "../domain/streaks.js";
 import { achievements, earnedAchievements } from "../domain/achievements.js";
 import { activityMessage } from "./activity-message.js";
+import { sendActivityPost, validateActivityImage } from "./activity-post.js";
 import { activityModal, LOG_ACTIVITY_CALLBACK_ID } from "./activity-modal.js";
 import { groupStatusMessage, personalStatusMessage } from "./progress-messages.js";
 import { helpMessage } from "./help-message.js";
@@ -134,6 +135,12 @@ export function registerSlackHandlers(app: App, dependencies: HandlerDependencie
     const typeValue = values.activity_type?.value?.selected_option?.value ?? "";
     const minutes = Number(values.minutes?.value?.value);
     const distanceValue = values.distance?.value?.value;
+    const images = values.image?.value?.files ?? [];
+    const imageError = validateActivityImage(images);
+    if (imageError) {
+      await ack({ response_action: "errors", errors: { image: imageError } });
+      return;
+    }
 
     if (!isActivityType(typeValue)) {
       await ack({ response_action: "errors", errors: { activity_type: "Velg en aktivitet." } });
@@ -177,11 +184,21 @@ export function registerSlackHandlers(app: App, dependencies: HandlerDependencie
       .join("\n");
 
     try {
-      const result = await client.chat.postMessage({
-        channel: dependencies.pustChannelId,
-        text: [activityMessage(activity), awardText].filter(Boolean).join("\n"),
-      });
-      if (result.ts) dependencies.repository.setSlackMessageTs(activity.id, result.ts);
+      const result = await sendActivityPost(
+        (post) => client.chat.postMessage({ channel: dependencies.pustChannelId, ...post }),
+        [activityMessage(activity), awardText].filter(Boolean).join("\n"),
+        images[0]?.id,
+      );
+      if (result.response.ts) {
+        dependencies.repository.setSlackMessageTs(activity.id, result.response.ts, result.imageFileId);
+      }
+      if (images.length > 0 && !result.imageFileId) {
+        await client.chat.postEphemeral({
+          channel: dependencies.pustChannelId,
+          user: body.user.id,
+          text: "Aktiviteten er registrert, men Slack kunne ikke vise bildet. Du kan legge det til som et svar i tråden.",
+        });
+      }
 
       if (activity.participantSlackId !== activity.registeredBySlackId) {
         await client.chat.postMessage({
@@ -217,6 +234,7 @@ export function registerSlackHandlers(app: App, dependencies: HandlerDependencie
           channel: dependencies.pustChannelId,
           ts: activity.slackMessageTs,
           text: `🧹 Denne aktiviteten ble slettet av <@${body.user.id}>. Sparks og gruppestatus er oppdatert.`,
+          blocks: [],
         });
       } else {
         await client.chat.postMessage({
@@ -281,11 +299,20 @@ export function registerSlackHandlers(app: App, dependencies: HandlerDependencie
 
     try {
       if (updated.slackMessageTs) {
-        await client.chat.update({
-          channel: dependencies.pustChannelId,
-          ts: updated.slackMessageTs,
-          text: `${activityMessage(updated)} · _Redigert av <@${body.user.id}>_`,
-        });
+        const ts = updated.slackMessageTs;
+        const result = await sendActivityPost(
+          (post) => client.chat.update({ channel: dependencies.pustChannelId, ts, ...post }),
+          `${activityMessage(updated)} · _Redigert av <@${body.user.id}>_`,
+          updated.slackImageFileId,
+        );
+        dependencies.repository.setSlackMessageTs(updated.id, ts, result.imageFileId);
+        if (updated.slackImageFileId && !result.imageFileId) {
+          await client.chat.postEphemeral({
+            channel: dependencies.pustChannelId,
+            user: body.user.id,
+            text: "Aktiviteten er oppdatert, men bildet er ikke lenger tilgjengelig i Slack.",
+          });
+        }
       }
     } catch (error) {
       logger.error("Aktiviteten ble redigert, men Slack-meldingen kunne ikke oppdateres", error);

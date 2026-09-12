@@ -16,6 +16,7 @@ interface ActivityRow {
   activity_date: string;
   created_at: string;
   slack_message_ts: string | null;
+  slack_image_file_id: string | null;
 }
 
 export class ActivityRepository {
@@ -59,6 +60,9 @@ export class ActivityRepository {
     }>;
     if (!columns.some((column) => column.name === "slack_message_ts")) {
       this.database.exec("ALTER TABLE activities ADD COLUMN slack_message_ts TEXT;");
+    }
+    if (!columns.some((column) => column.name === "slack_image_file_id")) {
+      this.database.exec("ALTER TABLE activities ADD COLUMN slack_image_file_id TEXT;");
     }
   }
 
@@ -123,9 +127,10 @@ export class ActivityRepository {
     return row.total;
   }
 
-  setSlackMessageTs(id: string, slackMessageTs: string): void {
-    this.database.prepare("UPDATE activities SET slack_message_ts = ? WHERE id = ?").run(
+  setSlackMessageTs(id: string, slackMessageTs: string, slackImageFileId?: string): void {
+    this.database.prepare("UPDATE activities SET slack_message_ts = ?, slack_image_file_id = ? WHERE id = ?").run(
       slackMessageTs,
+      slackImageFileId ?? null,
       id,
     );
   }
@@ -207,5 +212,6 @@ function mapRow(row: ActivityRow): Activity {
     activityDate: row.activity_date,
     createdAt: row.created_at,
     ...(row.slack_message_ts === null ? {} : { slackMessageTs: row.slack_message_ts }),
+    ...(row.slack_image_file_id === null ? {} : { slackImageFileId: row.slack_image_file_id }),
   };
 }

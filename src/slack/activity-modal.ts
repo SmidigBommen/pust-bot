@@ -70,6 +70,19 @@ export function activityModal(defaultParticipant: string, today: string): ModalV
       },
       {
         type: "input",
+        block_id: "image",
+        optional: true,
+        label: { type: "plain_text", text: "Bilde fra aktiviteten (valgfritt)" },
+        hint: { type: "plain_text", text: "Last opp ett JPG-, PNG- eller GIF-bilde. Det vises i #pust." },
+        element: {
+          type: "file_input",
+          action_id: "value",
+          filetypes: ["jpg", "jpeg", "png", "gif"],
+          max_files: 1,
+        },
+      },
+      {
+        type: "input",
         block_id: "activity_date",
         label: { type: "plain_text", text: "Dato" },
         element: {
