@@ -1,14 +1,14 @@
 import type { App } from "@slack/bolt";
 import { isActivityType, validateActivity, type ActivityInput } from "../domain/activity.js";
 import type { ActivityRepository } from "../storage/activity-repository.js";
-import { calculateWeeklyProgress } from "../domain/weekly-progress.js";
 import { osloWeek } from "../domain/week.js";
-import { groupWeeklyStreak, personalWeeklyStreak } from "../domain/streaks.js";
+import { personalWeeklyStreak } from "../domain/streaks.js";
 import { achievements, earnedAchievements } from "../domain/achievements.js";
 import { activityMessage } from "./activity-message.js";
 import { sendActivityPost, validateActivityImage } from "./activity-post.js";
 import { activityModal, LOG_ACTIVITY_CALLBACK_ID } from "./activity-modal.js";
 import { groupStatusMessage, personalStatusMessage } from "./progress-messages.js";
+import { buildWeeklyStatus } from "./weekly-status.js";
 import { helpMessage } from "./help-message.js";
 import { deleteActivityModal, DELETE_ACTIVITY_CALLBACK_ID } from "./delete-activity-modal.js";
 import {
@@ -49,26 +49,9 @@ export function registerSlackHandlers(app: App, dependencies: HandlerDependencie
     }
 
     if (subcommand === "status") {
-      const range = osloWeek();
-      const allActivities = dependencies.repository.listThrough(range.end);
-      const progress = calculateWeeklyProgress(
-        allActivities.filter(
-          (activity) => activity.activityDate >= range.start && activity.activityDate <= range.end,
-        ),
-      );
       await respond({
         response_type: "in_channel",
-        text: groupStatusMessage({
-          progress,
-          range,
-          memberCount: dependencies.groupMemberCount,
-          participantGoal: dependencies.weeklyParticipantGoal,
-          minutesGoal: dependencies.weeklyMinutesGoal,
-          groupStreak: groupWeeklyStreak(allActivities, range, {
-            participantGoal: dependencies.weeklyParticipantGoal,
-            minutesGoal: dependencies.weeklyMinutesGoal,
-          }),
-        }),
+        text: groupStatusMessage(buildWeeklyStatus(dependencies.repository, osloWeek(), dependencies)),
       });
       return;
     }

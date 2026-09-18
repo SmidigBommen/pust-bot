@@ -38,6 +38,15 @@ Bruk denne sjekklisten i `#pust` før en ny versjon regnes som klar.
 - Slett en aktivitet med bilde. Innlegget viser slettemeldingen uten bilde. Filen slettes ikke fra Slack.
 - Slett selve bildet i Slack og rediger aktiviteten. Hvis Slack avviser bildereferansen, oppdateres teksten uten bilde og brukeren får beskjed.
 
+## Automatisk ukessammendrag
+
+- Oppstartsloggen viser om ukessammendrag er aktivert. Lokal Compose skal vise `av`.
+- I produksjon skal første ordinære søndagsinnlegg ha tittelen `Ukens trening søndag kl. 22:00`, korrekt ukesperiode og ingen kanalvarsling.
+- Ukens tall skal samsvare med `/pust status` ved utsending. Et manuelt statusinnlegg skal ikke undertrykke sammendraget.
+- Senere registrering, redigering og sletting skal ikke endre sammendraget.
+- Utsending, tom uke, passert tidspunkt og feil skal være synlige i botens logger når boten kjører. Ingen ettersending skal skje ved omstart.
+- Tester med simulert klokke dekker sommertid, vintertid, forsinkelse, omstart, samtidige kontroller og Slack-feil. Ikke endre produksjonsserverens klokke for å teste dette.
+
 ## Redigering og sletting
 
 - `/pust rediger` viser bare aktivitetene til brukeren som kjørte kommandoen.

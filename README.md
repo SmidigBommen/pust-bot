@@ -53,6 +53,29 @@ scopene. Hvis reinstallasjonen gir et nytt bot-token, oppdater
 Slack krever dette scopet for [filopplasting i modaler](https://docs.slack.dev/reference/block-kit/block-elements/file-input-element/).
 Ingen kameraknapp eller valg av tidligere opplastede bilder inngår i denne versjonen.
 
+## Automatisk ukessammendrag
+
+Pust poster ukens status i `#pust` søndag kl. 22:00 i `Europe/Oslo`, med tittelen
+«Ukens trening søndag kl. 22:00». Sammendraget bruker samme beregning som
+`/pust status`, uten kanalvarsling. Uker uten registrert aktivitet hoppes over.
+Innlegget beholdes som et øyeblikksbilde selv om aktiviteter senere registreres,
+redigeres eller slettes. Manuelle statusinnlegg påvirker ikke utsendingen.
+
+En timer i boten sjekker klokken ved hvert minutt, uten databaseoppslag før
+sammendraget skal sendes. En allerede kjørende bot kan sende i løpet av minuttet
+22:00:00–22:00:59. Hvis boten starter etter fristen, eller timeren blir forsinket
+utover dette minuttet, blir det ingen ettersending.
+
+Pust registrerer ett forsøk per kanal og uke i SQLite før den kontakter Slack.
+Sendingen har ti sekunders timeout og ingen automatiske nye forsøk, heller ikke
+ved ratebegrensning. Feil logges. Et avbrudd etter at forsøket er registrert kan
+derfor føre til at ukens innlegg uteblir.
+
+`PUST_WEEKLY_RECAP_ENABLED` må være `true` eller `false`. Standardverdien i appen
+er `false`. `compose.yaml` slår funksjonen av for lokal utvikling, mens
+`compose.coolify.yaml` aktiverer den som standard i produksjon. Sett variabelen
+til `false` i Coolify og deploy på nytt for å slå av automatiske innlegg.
+
 Bruk [Slack-testplanen](docs/slack-testplan.md) ved manuell verifisering av en ny
 versjon.
 

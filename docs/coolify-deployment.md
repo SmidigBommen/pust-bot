@@ -169,6 +169,27 @@ katastrofesikring må denne katalogen i tillegg kopieres til ekstern lagring.
 - Rull tilbake til forrige fungerende commit dersom ny versjon ikke starter.
 - Ikke slett eller opprett `pust_data` på nytt under rollback.
 
+## Ukentlig statusinnlegg
+
+Ukessammendraget kjører inne i Pust-prosessen og trenger ingen planlagt oppgave i
+Coolify. `compose.coolify.yaml` setter `PUST_WEEKLY_RECAP_ENABLED` til `true` som
+standard. Tidspunktet er søndag kl. 22:00 i `Europe/Oslo`, uavhengig av serverens
+tidssone. Serverens klokke må fortsatt være korrekt.
+
+Utsendingen krever bare det eksisterende Slack-scopet `chat:write`. Oppstart
+oppretter tabellen `weekly_recaps` med én rad per kanal og uke. Ta SQLite-backup
+før første deploy av denne versjonen. Status er `attempted`, `sent`, `failed`,
+`skipped_empty` eller `skipped_late`; en vellykket sending lagrer Slack-meldingens
+tidsstempel. En rad med `attempted` etter omstart blir ikke sendt på nytt.
+
+Det er ingen ettersending etter nedetid og ingen automatiske nye forsøk ved feil.
+Ved normal omstart etter søndagens frist planlegges neste søndag. Det opprettes
+ikke historiske rader for uker da boten var avslått.
+
+Deaktiver ved å sette `PUST_WEEKLY_RECAP_ENABLED=false` i Coolify og deploye på
+nytt. Behold `weekly_recaps` ved omstart og rollback, slik at allerede utførte
+forsøk ikke gjentas.
+
 ## Referanser
 
 - [Slack: Using Socket Mode](https://docs.slack.dev/tools/bolt-js/concepts/socket-mode)

@@ -53,6 +53,15 @@ export class ActivityRepository {
         awarded_at TEXT NOT NULL,
         PRIMARY KEY (slack_id, achievement_key)
       );
+
+      CREATE TABLE IF NOT EXISTS weekly_recaps (
+        channel_id TEXT NOT NULL,
+        week_start TEXT NOT NULL,
+        checked_at TEXT NOT NULL,
+        status TEXT NOT NULL CHECK (status IN ('attempted', 'sent', 'failed', 'skipped_empty', 'skipped_late')),
+        slack_message_ts TEXT,
+        PRIMARY KEY (channel_id, week_start)
+      );
     `);
 
     const columns = this.database.prepare("PRAGMA table_info(activities)").all() as unknown as Array<{
@@ -197,6 +206,27 @@ export class ActivityRepository {
       VALUES (?, ?, ?)
     `).run(slackId, achievementKey, new Date().toISOString());
     return Number(result.changes) === 1;
+  }
+
+  claimWeeklyRecap(
+    channelId: string,
+    weekStart: string,
+    checkedAt: Date,
+    status: "attempted" | "skipped_empty" | "skipped_late",
+  ): boolean {
+    const result = this.database.prepare(`
+      INSERT INTO weekly_recaps (channel_id, week_start, checked_at, status)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT (channel_id, week_start) DO NOTHING
+    `).run(channelId, weekStart, checkedAt.toISOString(), status);
+    return Number(result.changes) === 1;
+  }
+
+  finishWeeklyRecap(channelId: string, weekStart: string, status: "sent" | "failed", slackMessageTs?: string): void {
+    this.database.prepare(`
+      UPDATE weekly_recaps SET status = ?, slack_message_ts = ?
+      WHERE channel_id = ? AND week_start = ? AND status = 'attempted'
+    `).run(status, slackMessageTs ?? null, channelId, weekStart);
   }
 }
 

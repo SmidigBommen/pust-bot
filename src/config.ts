@@ -7,6 +7,7 @@ export interface Config {
   weeklyParticipantGoal: number;
   weeklyMinutesGoal: number;
   healthPort: number;
+  weeklyRecapEnabled: boolean;
 }
 
 function required(name: string): string {
@@ -25,7 +26,16 @@ export function loadConfig(): Config {
     weeklyParticipantGoal: numberSetting("PUST_WEEKLY_PARTICIPANT_GOAL", 4),
     weeklyMinutesGoal: numberSetting("PUST_WEEKLY_MINUTES_GOAL", 240),
     healthPort: numberSetting("HEALTH_PORT", 3000),
+    weeklyRecapEnabled: booleanSetting("PUST_WEEKLY_RECAP_ENABLED", false),
   };
+}
+
+function booleanSetting(name: string, fallback: boolean): boolean {
+  const value = process.env[name];
+  if (value === undefined) return fallback;
+  if (value === "true") return true;
+  if (value === "false") return false;
+  throw new Error(`${name} må være true eller false.`);
 }
 
 function numberSetting(name: string, fallback: number): number {

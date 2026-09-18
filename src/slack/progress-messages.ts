@@ -3,7 +3,7 @@ import type { WeeklyProgress } from "../domain/weekly-progress.js";
 import type { DateRange } from "../domain/week.js";
 import { achievements, type AchievementKey } from "../domain/achievements.js";
 
-interface GroupStatusInput {
+export interface GroupStatusInput {
   progress: WeeklyProgress;
   range: DateRange;
   memberCount: number;
@@ -12,10 +12,10 @@ interface GroupStatusInput {
   groupStreak: number;
 }
 
-export function groupStatusMessage(input: GroupStatusInput): string {
+export function groupStatusMessage(input: GroupStatusInput, heading = "Ukens Pust"): string {
   const { progress } = input;
   return [
-    `🌬️ *Ukens Pust · ${displayDate(input.range.start)}–${displayDate(input.range.end)}*`,
+    `🌬️ *${heading} · ${displayDate(input.range.start)}–${displayDate(input.range.end)}*`,
     progressBar(progress.participants, input.participantGoal),
     `👥 *${progress.participants}/${input.participantGoal} deltakere* · ${input.memberCount} medlemmer i #pust`,
     progressBar(progress.qualifyingMinutes, input.minutesGoal),

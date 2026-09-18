@@ -4,6 +4,8 @@ import { loadConfig } from "./config.js";
 import { registerSlackHandlers } from "./slack/register-handlers.js";
 import { ActivityRepository } from "./storage/activity-repository.js";
 import { startHealthServer, stopHealthServer } from "./health-server.js";
+import { startWeeklyRecap } from "./weekly-recap.js";
+import { createWeeklyRecapSender } from "./slack/weekly-recap-sender.js";
 
 const config = loadConfig();
 const app = new App({
@@ -23,6 +25,18 @@ registerSlackHandlers(app, {
 
 await app.start();
 const healthServer = await startHealthServer(config.healthPort);
+const stopWeeklyRecap = config.weeklyRecapEnabled
+  ? startWeeklyRecap({
+      repository,
+      channelId: config.pustChannelId,
+      groupMemberCount: config.groupMemberCount,
+      weeklyParticipantGoal: config.weeklyParticipantGoal,
+      weeklyMinutesGoal: config.weeklyMinutesGoal,
+      send: createWeeklyRecapSender(config.slackBotToken),
+      logger: app.logger,
+    })
+  : async () => {};
+app.logger.info(`Automatisk ukessammendrag: ${config.weeklyRecapEnabled ? "søndag kl. 22:00 Europe/Oslo" : "av"}`);
 app.logger.info("🌬️ Pust er i gang!");
 
 let stopping = false;
@@ -31,6 +45,7 @@ async function stop(signal: string): Promise<void> {
   stopping = true;
   app.logger.info(`Stopper Pust etter ${signal}`);
   try {
+    await stopWeeklyRecap();
     await stopHealthServer(healthServer);
     await app.stop();
     process.exitCode = 0;
