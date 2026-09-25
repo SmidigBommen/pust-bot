@@ -95,6 +95,9 @@ describe("weekly recap", () => {
     const text = h.send.mock.calls[0]![1];
     expect(text).toContain("14.09–20.09");
     expect(text).toContain("40/240 minutter");
+    expect(text).toContain("Løping: *40 min*");
+    expect(text).toContain("Denne uken: 1 aktivitet · 1 aktivitetstype");
+    expect(text).toContain("Totalt *40 minutter i bevegelse*");
     expect(text).not.toMatch(/<!(channel|here|everyone)>/);
     expect(records()[0]).toMatchObject({ status: "sent", slack_message_ts: "123.456" });
 

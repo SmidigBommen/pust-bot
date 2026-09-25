@@ -1,6 +1,6 @@
 import { activityLabels, sparksForActivity, type Activity } from "../domain/activity.js";
 
-const activityEmoji: Record<Activity["type"], string> = {
+export const activityEmoji: Record<Activity["type"], string> = {
   walk_hike: "🥾",
   run: "🏃",
   cycle: "🚴",

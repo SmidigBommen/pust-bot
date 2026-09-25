@@ -122,11 +122,14 @@ Begge målene må nås for å videreføre gruppens streak. Ved oppstart foreslå
 
 - Deltakelse: 4 av 14 medlemmer.
 - Aktivitet: 240 minutter totalt.
-- Maksimalt 150 minutter per person teller mot gruppens minuttmål hver uke.
+- Alle registrerte minutter teller mot gruppens minuttmål, uten grense per person.
 - Alle minutter gir fortsatt personlige Sparks.
 
-Begrensningen på tellende gruppeminutter hindrer at én svært aktiv person alene
-fullfører fellesskapsmålet.
+Status viser minutter per aktivitetstype og registrert distanse der den finnes,
+sortert etter flest minutter. Oppsummeringen viser antall aktiviteter, antall
+aktivitetstyper og samlet tid og distanse. Deltakelsesmålet krever fortsatt at
+flere medlemmer bidrar. Gruppestreak beregnes med samme regel uten minuttgrense
+også for tidligere uker; allerede publiserte søndagssammendrag endres ikke.
 
 ### 6.1 Adaptive mål
 

@@ -38,7 +38,7 @@ describe("levels", () => {
 });
 
 describe("weekly group progress", () => {
-  it("caps group minutes per person without capping actual minutes", () => {
+  it("counts every minute toward the group goal", () => {
     const activities = [
       {
         id: "one",
@@ -65,8 +65,12 @@ describe("weekly group progress", () => {
     expect(calculateWeeklyProgress(activities)).toEqual({
       participants: 2,
       totalMinutes: 230,
-      qualifyingMinutes: 180,
       distanceKm: 52.5,
+      activityCount: 2,
+      byType: [
+        { type: "cycle", minutes: 200, distanceKm: 50 },
+        { type: "walk_hike", minutes: 30, distanceKm: 2.5 },
+      ],
     });
   });
 });
@@ -102,7 +106,8 @@ describe("status", () => {
 
   it("shows cooperative group and personal progress", () => {
     const message = groupStatusMessage({
-      progress: { participants: 3, totalMinutes: 210, qualifyingMinutes: 190, distanceKm: 12.5 },
+      progress: { participants: 3, totalMinutes: 210, distanceKm: 12.5, activityCount: 3,
+        byType: [{ type: "run", minutes: 210, distanceKm: 12.5 }] },
       range: { start: "2026-08-24", end: "2026-08-30" },
       memberCount: 14,
       participantGoal: 4,
@@ -110,7 +115,7 @@ describe("status", () => {
       groupStreak: 2,
     });
     expect(message).toContain("3/4 deltakere");
-    expect(message).toContain("190/240 minutter");
+    expect(message).toContain("210/240 minutter");
     expect(message).toContain("Gruppestreak");
     expect(personalStatusMessage(350, 3)).toContain("Personlig streak");
   });

@@ -2,6 +2,8 @@ import { levelProgress } from "../domain/levels.js";
 import type { WeeklyProgress } from "../domain/weekly-progress.js";
 import type { DateRange } from "../domain/week.js";
 import { achievements, type AchievementKey } from "../domain/achievements.js";
+import { activityLabels } from "../domain/activity.js";
+import { activityEmoji } from "./activity-message.js";
 
 export interface GroupStatusInput {
   progress: WeeklyProgress;
@@ -18,11 +20,16 @@ export function groupStatusMessage(input: GroupStatusInput, heading = "Ukens Pus
     `🌬️ *${heading} · ${displayDate(input.range.start)}–${displayDate(input.range.end)}*`,
     progressBar(progress.participants, input.participantGoal),
     `👥 *${progress.participants}/${input.participantGoal} deltakere* · ${input.memberCount} medlemmer i #pust`,
-    progressBar(progress.qualifyingMinutes, input.minutesGoal),
-    `⚡ *${progress.qualifyingMinutes}/${input.minutesGoal} minutter* mot ukesmålet`,
-    progress.distanceKm > 0 ? `🏔️ Sammen har vi beveget oss *${formatNumber(progress.distanceKm)} km*.` : null,
+    progressBar(progress.totalMinutes, input.minutesGoal),
+    `⚡ *${progress.totalMinutes}/${input.minutesGoal} minutter* mot ukesmålet`,
+    progress.byType.length > 0 ? "\n*Ukens aktiviteter*" : null,
+    ...progress.byType.map(({ type, minutes, distanceKm }) =>
+      `${activityEmoji[type]} ${activityLabels[type]}: *${formatNumber(minutes)} min${distanceKm > 0 ? ` · ${formatNumber(distanceKm)} km` : ""}*`),
+    "",
+    `Denne uken: ${progress.activityCount} ${progress.activityCount === 1 ? "aktivitet" : "aktiviteter"} · ${progress.byType.length} ${progress.byType.length === 1 ? "aktivitetstype" : "aktivitetstyper"}`,
+    `Totalt *${formatDuration(progress.totalMinutes)} i bevegelse${progress.distanceKm > 0 ? ` · ${formatNumber(progress.distanceKm)} km` : ""}*`,
     input.groupStreak > 0 ? `🔥 Gruppestreak: *${input.groupStreak} uker*` : null,
-    progress.participants >= input.participantGoal && progress.qualifyingMinutes >= input.minutesGoal
+    progress.participants >= input.participantGoal && progress.totalMinutes >= input.minutesGoal
       ? "🔥 *Full pust!* Begge ukesmålene er nådd."
       : "Hver aktivitet fra 10 minutter styrker Gnists felles Pust.",
   ]
@@ -71,4 +78,11 @@ function displayDate(value: string): string {
 
 function formatNumber(value: number): string {
   return new Intl.NumberFormat("nb-NO", { maximumFractionDigits: 2 }).format(value);
+}
+
+function formatDuration(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const remainder = minutes % 60;
+  if (hours === 0) return `${minutes} minutter`;
+  return `${formatNumber(hours)} ${hours === 1 ? "time" : "timer"}${remainder > 0 ? ` og ${remainder} ${remainder === 1 ? "minutt" : "minutter"}` : ""}`;
 }

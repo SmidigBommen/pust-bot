@@ -55,6 +55,13 @@ Ingen kameraknapp eller valg av tidligere opplastede bilder inngår i denne vers
 
 ## Automatisk ukessammendrag
 
+`/pust status` og søndagssammendraget viser minutter per aktivitetstype, med
+kilometer der distanse er registrert. Listen sorteres etter flest minutter.
+To linjer oppsummerer antall aktiviteter og aktivitetstyper, og samlet tid
+i timer og minutter samt registrert distanse. Alle minutter teller mot
+ukesmålet, uten grense per person. Dette gjelder også beregning av gruppestreak
+for tidligere uker, men endrer ikke allerede publiserte øyeblikksbilder.
+
 Pust poster ukens status i `#pust` søndag kl. 22:00 i `Europe/Oslo`, med tittelen
 «Ukens trening søndag kl. 22:00». Sammendraget bruker samme beregning som
 `/pust status`, uten kanalvarsling. Uker uten registrert aktivitet hoppes over.

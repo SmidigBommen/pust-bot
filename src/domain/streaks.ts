@@ -40,7 +40,7 @@ export function groupWeeklyStreak(
     );
     return (
       progress.participants >= goals.participantGoal &&
-      progress.qualifyingMinutes >= goals.minutesGoal
+      progress.totalMinutes >= goals.minutesGoal
     );
   };
   let week = successful(currentWeek) ? currentWeek : previousWeek(currentWeek);
@@ -52,4 +52,3 @@ export function groupWeeklyStreak(
   }
   return streak;
 }
-

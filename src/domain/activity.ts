@@ -1,5 +1,4 @@
 export const MINIMUM_ACTIVITY_MINUTES = 10;
-export const GROUP_MINUTES_CAP_PER_PERSON = 150;
 
 export const activityTypes = [
   "walk_hike",
