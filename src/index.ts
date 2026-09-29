@@ -2,6 +2,7 @@ import "dotenv/config";
 import { App } from "@slack/bolt";
 import { loadConfig } from "./config.js";
 import { registerSlackHandlers } from "./slack/register-handlers.js";
+import { TeamRepository } from "./storage/team-repository.js";
 import { ActivityRepository } from "./storage/activity-repository.js";
 import { startHealthServer, stopHealthServer } from "./health-server.js";
 import { startWeeklyRecap } from "./weekly-recap.js";
@@ -15,7 +16,9 @@ const app = new App({
 });
 
 const repository = new ActivityRepository(config.databasePath);
+const teams = new TeamRepository(config.databasePath);
 registerSlackHandlers(app, {
+  teams,
   repository,
   pustChannelId: config.pustChannelId,
   groupMemberCount: config.groupMemberCount,
@@ -48,6 +51,7 @@ async function stop(signal: string): Promise<void> {
     await stopWeeklyRecap();
     await stopHealthServer(healthServer);
     await app.stop();
+    teams.close();
     process.exitCode = 0;
   } catch (error) {
     app.logger.error("Pust klarte ikke å stoppe kontrollert", error);

@@ -66,6 +66,35 @@ Bruk denne sjekklisten i `#pust` før en ny versjon regnes som klar.
 - `Fire på rad` låses opp etter fire sammenhengende uker.
 - `Medhjelper` låses opp når noen registrerer for en kollega.
 
+## Pustelag
+
+- `/pust lag` åpner oversikten privat på både mobil og datamaskin.
+- Opprett et lag fra fredag til søndag med standardmålet om at alle deltar.
+  Kontroller datoer og mål på «Se over» før «Opprett». Ingen kanalpost sendes.
+- Bytt mellom deltakelse og minutter i skjemaet. Navn og datoer beholdes, og
+  riktig målfelt vises. Ugyldige datoer, prosent eller minutter avvises.
+- Del status i `#pust`. En annen bruker kan åpne laget fra knappen og melde seg
+  inn. Nytt klikk eller nytt forsøk skal ikke opprette dobbelt medlemskap.
+- Kontroller at en sen innmelding tar med tidligere aktiviteter i perioden.
+  En registrering gjort av en hjelper teller for deltakeren, ikke hjelperen.
+- Med tre av tre deltakere skal en fjerde innmelding endre fremdriften til tre
+  av fire, med mindre den nye personen allerede har aktivitet i perioden.
+- 75 prosent av fem medlemmer krever fire deltakere. Minuttmålet endres ikke
+  ved innmelding. Alle registrerte minutter teller.
+- Forlat laget og bekreft dialogen. Bidraget forsvinner bare fra dette laget.
+  Bli med igjen og bekreft at hele periodens aktiviteter teller igjen.
+- Bli med på to lag med overlappende perioder. Aktiviteten bidrar til begge,
+  men telles fortsatt bare én gang av `/pust status` og `/pust meg`.
+- Rediger mål før start som oppretter. Andre brukere har ikke redigeringsknapp.
+  En utfordring som har startet kan ikke endres via et tidligere åpnet skjema.
+- Oppdater lagstatus etter endring eller sletting av en aktivitet. Tallene og
+  aktivitetstypene skal endres riktig.
+- Åpne avsluttede utfordringer. Innmelding, utmelding og redigering er låst,
+  mens resultatet fortsatt kan korrigeres gjennom aktivitetsloggen.
+- Tester med simulert klokke dekker start/slutt ved Oslo-midnatt og sommertid.
+  Ikke endre produksjonsklokken for å prøve datoavgrensningene.
+- Start boten på nytt og kontroller at lag, mål og medlemskap er bevart.
+
 ## Persistens
 
 - Stopp med `docker compose down` uten `-v`.

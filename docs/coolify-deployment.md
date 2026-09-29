@@ -190,6 +190,21 @@ Deaktiver ved å sette `PUST_WEEKLY_RECAP_ENABLED=false` i Coolify og deploye p�
 nytt. Behold `weekly_recaps` ved omstart og rollback, slik at allerede utførte
 forsøk ikke gjentas.
 
+## Pustelag
+
+Før første deploy av Pustelag: ta og verifiser en SQLite-backup som beskrevet
+ovenfor. Oppstart oppretter `team_challenges` og `team_members` i samme database
+som aktivitetene. Migreringen er additiv og kan kjøres flere ganger. Rollback
+til en tidligere appversjon lar lagtabellene ligge, men skjuler lagfunksjonen.
+
+Ingen nye miljøvariabler eller Slack-scopes er nødvendig. Kommandoen er fortsatt
+`/pust`; `lag` er et nytt underkommandoord. Den oppdaterte usage-hinten i manifestet
+er kun hjelpetekst og krever ikke reinstallasjon for at `/pust lag` skal virke.
+
+Verifiser opprettelse, medlemskap, målredigering og statusdeling med
+[Slack-testplanen](slack-testplan.md). Lagvisningene bruker de samme registrerte
+aktivitetene. Kanalens søndagssammendrag får ingen ekstra laginnlegg.
+
 ## Referanser
 
 - [Slack: Using Socket Mode](https://docs.slack.dev/tools/bolt-js/concepts/socket-mode)

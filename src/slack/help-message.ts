@@ -5,6 +5,7 @@ export function helpMessage(): string {
     "*Kommandoer*",
     "• `/pust logg` — registrer aktivitet for deg selv eller en kollega",
     "• `/pust status` — del ukens felles fremdrift i #pust",
+    "• `/pust lag` — opprett eller bli med i et Pustelag og se fremdrift",
     "• `/pust meg` — se dine Sparks og ditt nivå privat",
     "• `/pust rediger` — rediger en nylig aktivitet",
     "• `/pust slett` — slett en nylig aktivitet",

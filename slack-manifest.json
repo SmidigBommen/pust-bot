@@ -13,7 +13,7 @@
       {
         "command": "/pust",
         "description": "Registrer aktivitet og se fremdrift",
-        "usage_hint": "logg | status | meg | hjelp",
+        "usage_hint": "logg | status | lag | meg | hjelp",
         "should_escape": false
       }
     ]

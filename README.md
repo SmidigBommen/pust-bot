@@ -53,6 +53,34 @@ scopene. Hvis reinstallasjonen gir et nytt bot-token, oppdater
 Slack krever dette scopet for [filopplasting i modaler](https://docs.slack.dev/reference/block-kit/block-elements/file-input-element/).
 Ingen kameraknapp eller valg av tidligere opplastede bilder inngår i denne versjonen.
 
+## Pustelag
+
+`/pust lag` åpner en privat oversikt der du kan opprette, finne og bli med på lag.
+Oppretteren velger navn, start- og sluttdato og ett mål for hele perioden:
+andel medlemmer som registrerer aktivitet (100 prosent betyr alle) eller
+samlet antall minutter. Skjemaet viser en oppsummering før lagring. Oppretteren
+blir selv med; et lag trenger minst to medlemmer for å nå målet.
+
+Begge datoene er inklusive i Oslo-tid. Medlemmer kan bli med og forlate laget
+helt til sluttdatoen er over. Alle aktivitetene deres fra perioden teller,
+også aktiviteter fra før innmelding. Deltakelsesmålet følger medlemslisten og
+rundes opp, mens minuttmålet står fast. Utmelding fjerner bare bidraget til
+laget. Samme aktivitet kan bidra til flere lag uten å dobles i kanalens tall.
+
+Oppretteren kan redigere utfordringen før startdatoen. Mål og datoer er låst
+fra start. Etter sluttdatoen er medlemslisten låst, og laget finnes under
+«Avsluttede utfordringer». Aktivitetsendringer og etterregistrering kan fortsatt
+endre tallene. Fremtidsdaterte aktiviteter teller først på aktivitetsdatoen.
+
+Lagstatus gjenbruker aktivitetsoversikten med minutter, kilometer og totalsum.
+«Del status i #pust» deler et øyeblikksbilde med en knapp for å åpne laget.
+Denne versjonen sender ingen automatiske laginnlegg. Søndagssammendraget for
+hele kanalen fortsetter som før.
+
+Ingen nye Slack-scopes eller miljøvariabler kreves. Ta SQLite-backup før første
+deploy: oppstart legger til `team_challenges` og `team_members` i eksisterende
+database. Eksisterende aktiviteter beholdes.
+
 ## Automatisk ukessammendrag
 
 `/pust status` og søndagssammendraget viser minutter per aktivitetstype, med

@@ -1,3 +1,4 @@
+import { TeamRepository } from "../src/storage/team-repository.js";
 import type { AllMiddlewareArgs, App, SlackCommandMiddlewareArgs } from "@slack/bolt";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -233,8 +234,8 @@ describe("weekly recap", () => {
     logActivity();
     type CommandHandler = (args: SlackCommandMiddlewareArgs & AllMiddlewareArgs) => Promise<void>;
     let command!: CommandHandler;
-    const app = { command: (_: string, handler: CommandHandler) => { command = handler; }, view: vi.fn() } as unknown as App;
-    registerSlackHandlers(app, { ...settings, repository, pustChannelId: "CPUST" });
+    const app = { action: vi.fn(), command: (_: string, handler: CommandHandler) => { command = handler; }, view: vi.fn() } as unknown as App;
+    registerSlackHandlers(app, { teams: new TeamRepository(":memory:"), ...settings, repository, pustChannelId: "CPUST" });
     const respond = vi.fn();
     await command({ ack: vi.fn(), command: { text: "status" }, respond } as unknown as Parameters<CommandHandler>[0]);
     expect(records()).toEqual([]);

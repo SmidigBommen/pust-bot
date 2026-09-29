@@ -1,3 +1,4 @@
+import { TeamRepository } from "../src/storage/team-repository.js";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -24,6 +25,7 @@ function harness(repository = new ActivityRepository(":memory:")) {
   const handlers = new Map<string, ViewHandler>();
   const app = {
     command: vi.fn(),
+    action: vi.fn(),
     view: (id: string, handler: ViewHandler) => handlers.set(id, handler),
   } as unknown as App;
   const client = {
@@ -34,7 +36,7 @@ function harness(repository = new ActivityRepository(":memory:")) {
     },
   };
   const logger = { error: vi.fn() };
-  registerSlackHandlers(app, {
+  registerSlackHandlers(app, { teams: new TeamRepository(":memory:"),
     repository, pustChannelId: "CPUST", groupMemberCount: 14,
     weeklyParticipantGoal: 4, weeklyMinutesGoal: 240,
   });

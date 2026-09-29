@@ -1,3 +1,5 @@
+import { registerTeamHandlers, teamOverview } from "./team-handlers.js";
+import type { TeamRepository } from "../storage/team-repository.js";
 import type { App } from "@slack/bolt";
 import { isActivityType, validateActivity, type ActivityInput } from "../domain/activity.js";
 import type { ActivityRepository } from "../storage/activity-repository.js";
@@ -28,6 +30,7 @@ function osloDate(): string {
 }
 
 interface HandlerDependencies {
+  teams: TeamRepository;
   repository: ActivityRepository;
   pustChannelId: string;
   groupMemberCount: number;
@@ -36,6 +39,7 @@ interface HandlerDependencies {
 }
 
 export function registerSlackHandlers(app: App, dependencies: HandlerDependencies): void {
+  registerTeamHandlers(app, dependencies);
   app.command("/pust", async ({ ack, command, client, respond }) => {
     await ack();
 
@@ -45,6 +49,11 @@ export function registerSlackHandlers(app: App, dependencies: HandlerDependencie
         trigger_id: command.trigger_id,
         view: activityModal(command.user_id, osloDate()),
       });
+      return;
+    }
+
+    if (subcommand === "lag") {
+      await client.views.open({ trigger_id: command.trigger_id, view: teamOverview(dependencies.teams, command.user_id) });
       return;
     }
 
