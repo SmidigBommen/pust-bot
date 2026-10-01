@@ -4,12 +4,12 @@ import type { App } from "@slack/bolt";
 import { isActivityType, validateActivity, type ActivityInput } from "../domain/activity.js";
 import type { ActivityRepository } from "../storage/activity-repository.js";
 import { osloWeek } from "../domain/week.js";
-import { personalWeeklyStreak } from "../domain/streaks.js";
 import { achievements, earnedAchievements } from "../domain/achievements.js";
 import { activityMessage } from "./activity-message.js";
 import { sendActivityPost, validateActivityImage } from "./activity-post.js";
 import { activityModal, LOG_ACTIVITY_CALLBACK_ID } from "./activity-modal.js";
-import { groupStatusMessage, personalStatusMessage } from "./progress-messages.js";
+import { groupStatusMessage } from "./progress-messages.js";
+import { buildPersonalStatusMessage } from "./personal-status.js";
 import { buildWeeklyStatus } from "./weekly-status.js";
 import { helpMessage } from "./help-message.js";
 import { deleteActivityModal, DELETE_ACTIVITY_CALLBACK_ID } from "./delete-activity-modal.js";
@@ -66,15 +66,9 @@ export function registerSlackHandlers(app: App, dependencies: HandlerDependencie
     }
 
     if (subcommand === "meg") {
-      const range = osloWeek();
-      const activities = dependencies.repository.listThrough(range.end);
       await respond({
         response_type: "ephemeral",
-        text: personalStatusMessage(
-          dependencies.repository.totalSparksForParticipant(command.user_id),
-          personalWeeklyStreak(activities, command.user_id, range),
-          earnedAchievements(activities, command.user_id, range),
-        ),
+        text: buildPersonalStatusMessage(dependencies.repository, command.user_id),
       });
       return;
     }
@@ -200,6 +194,18 @@ export function registerSlackHandlers(app: App, dependencies: HandlerDependencie
       }
     } catch (error) {
       logger.error("Aktiviteten ble lagret, men Slack-meldingen feilet", error);
+    }
+
+    if (activity.participantSlackId === activity.registeredBySlackId) {
+      try {
+        await client.chat.postEphemeral({
+          channel: dependencies.pustChannelId,
+          user: activity.participantSlackId,
+          text: buildPersonalStatusMessage(dependencies.repository, activity.participantSlackId),
+        });
+      } catch (error) {
+        logger.error("Aktiviteten ble lagret, men den private fremdriftsmeldingen feilet", error);
+      }
     }
   });
 

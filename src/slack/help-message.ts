@@ -11,6 +11,8 @@ export function helpMessage(): string {
     "• `/pust slett` — slett en nylig aktivitet",
     "• `/pust hjelp` — vis denne hjelpen",
     "",
+    "Når du logger for deg selv, får du også oppdatert personlig fremdrift privat i #pust.",
+    "",
     "Aktivitet fra 10 minutter gir én Spark per minutt. Det finnes ingen individuell toppliste—hver aktivitet styrker både deg og fellesskapet.",
   ].join("\n");
 }

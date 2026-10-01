@@ -31,6 +31,18 @@ lagrede Pust-dataene med vilje skal slettes.
 Slack-appen opprettes fra `slack-manifest.json`. Lokal kjøring bruker Socket Mode,
 slik at det ikke kreves en offentlig HTTP-adresse.
 
+## Personlig fremdrift etter registrering
+
+Når du registrerer en aktivitet for deg selv, viser Pust automatisk samme
+personlige fremdrift som `/pust meg`, inkludert den nye aktiviteten: Sparks,
+nivå, veien til neste nivå, personlig streak og prestasjoner. Meldingen vises
+privat i `#pust`, bare for deg, og er midlertidig på samme måte som kommandosvaret.
+
+Registrering for andre sender ikke denne fremdriftsmeldingen. Den eksisterende
+beskjeden til deltakeren om at noen registrerte for dem beholdes. Redigering og
+sletting utløser heller ikke en ny fremdriftsmelding. Hvis sendingen feiler,
+beholdes aktiviteten og feilen logges. Ingen nye Slack-scopes kreves.
+
 ## Bilder i aktivitetsinnlegg
 
 `/pust logg` har et valgfritt felt for å laste opp ett nytt JPG-, PNG- eller

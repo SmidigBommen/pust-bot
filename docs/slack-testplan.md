@@ -25,6 +25,14 @@ Bruk denne sjekklisten i `#pust` før en ny versjon regnes som klar.
 - Kanalinnlegget viser riktig aktivitet, minutter, kilometer og Sparks.
 - Registrering for en kollega viser hjelperen og sender kollegaen en privat melding.
 - Første registrering låser opp `Første pust` én gang, ikke ved hver aktivitet.
+- Registrer for deg selv, med og uten bilde. Etter lagring vises personlig
+  fremdrift privat i `#pust`. Sammenlign med `/pust meg`: begge skal vise de
+  oppdaterte Sparks-, nivå-, streak- og prestasjonstallene.
+- Registrer for en kollega. Ingen automatisk personlig fremdriftsmelding skal
+  sendes til noen av dere. Den eksisterende private registreringsbeskjeden til
+  kollegaen skal fortsatt komme.
+- Ugyldig registrering, redigering og sletting skal ikke sende denne
+  fremdriftsmeldingen. Bildevarsler kan fortsatt vises ved bildefeil.
 
 ## Bilder
 
