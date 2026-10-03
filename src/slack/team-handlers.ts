@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { App, BlockButtonAction, BlockStaticSelectAction } from "@slack/bolt";
 import type { ModalView } from "@slack/types";
+import { achievements } from "../domain/achievements.js";
 import { TeamRuleError, validateTeam, type TeamInput } from "../domain/team-challenge.js";
 import type { ActivityRepository } from "../storage/activity-repository.js";
 import type { TeamRepository } from "../storage/team-repository.js";
@@ -124,7 +125,17 @@ export function registerTeamHandlers(app: App, { teams, repository, pustChannelI
       const team = data.id
         ? teams.edit(data.id, body.user.id, data.revision!, data.input)
         : teams.create(data.input, body.user.id, data.requestId);
-      result = detail(team.id, body.user.id, data.id ? "Utfordringen er oppdatert." : "Laget er opprettet! Del status for å invitere flere.");
+      let notice = data.id ? "Utfordringen er oppdatert." : "Laget er opprettet! Del status for å invitere flere.";
+      if (!data.id) {
+        try {
+          if (repository.awardAchievement(body.user.id, "team_starter")) {
+            notice += `\n🏅 Prestasjon låst opp: ${achievements.team_starter.name} — ${achievements.team_starter.description}.`;
+          }
+        } catch (error) {
+          logger.error("Laget ble opprettet, men prestasjonen kunne ikke lagres", error);
+        }
+      }
+      result = detail(team.id, body.user.id, notice);
     } catch (error) {
       if (!(error instanceof TeamRuleError)) logger.error("Lagring av Pustelag feilet", error);
       result = teamOverview(teams, body.user.id, false, 0, error instanceof TeamRuleError ? error.message : "Lagringen kunne ikke fullføres. Kontroller laglisten før du prøver igjen.");

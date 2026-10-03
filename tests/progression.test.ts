@@ -28,6 +28,19 @@ describe("Sparks", () => {
 });
 
 describe("levels", () => {
+  it.each([
+    [6_000, "Pustemester", "Tindevandrer", 3_000],
+    [8_999, "Pustemester", "Tindevandrer", 1],
+    [9_000, "Tindevandrer", "Gnistlegende", 6_000],
+    [14_999, "Tindevandrer", "Gnistlegende", 1],
+    [15_000, "Gnistlegende", null, null],
+    [20_000, "Gnistlegende", null, null],
+  ])("reports the correct level at %i Sparks", (sparks, current, next, remaining) => {
+    const progress = levelProgress(sparks);
+    expect(progress.current?.name).toBe(current);
+    expect(progress.next?.name ?? null).toBe(next);
+    expect(progress.sparksUntilNext).toBe(remaining);
+  });
   it("reports current and next level", () => {
     expect(levelProgress(350)).toEqual({
       current: { number: 3, name: "Stifinner", minimumSparks: 300 },
@@ -208,6 +221,11 @@ describe("weekly streaks", () => {
 });
 
 describe("achievements", () => {
+  it("awards team creation independently of activity history", () => {
+    const week = { start: "2026-09-28", end: "2026-10-04" };
+    expect(earnedAchievements([], "U1", week, true)).toEqual(["team_starter"]);
+    expect(earnedAchievements([], "U1", week, false)).toEqual([]);
+  });
   it("derives personal achievements and persists each award once", () => {
     const repository = new ActivityRepository(":memory:");
     const inputs = [

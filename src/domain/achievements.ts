@@ -7,6 +7,7 @@ export const achievements = {
   new_trail: { name: "Ny sti", description: "Har prøvd tre ulike aktivitetstyper" },
   four_in_a_row: { name: "Fire på rad", description: "Har en personlig streak på fire uker" },
   helper: { name: "Medhjelper", description: "Har hjulpet en kollega med registrering" },
+  team_starter: { name: "Initiativtaker", description: "Har opprettet sitt første Pustelag" },
 } as const;
 
 export type AchievementKey = keyof typeof achievements;
@@ -15,6 +16,7 @@ export function earnedAchievements(
   activities: readonly Activity[],
   slackId: string,
   currentWeek: DateRange,
+  hasCreatedTeam = false,
 ): AchievementKey[] {
   const ownActivities = activities.filter(
     (activity) => activity.participantSlackId === slackId,
@@ -31,6 +33,6 @@ export function earnedAchievements(
   ) {
     earned.push("helper");
   }
+  if (hasCreatedTeam) earned.push("team_starter");
   return earned;
 }
-

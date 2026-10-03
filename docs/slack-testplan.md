@@ -73,6 +73,14 @@ Bruk denne sjekklisten i `#pust` før en ny versjon regnes som klar.
 - `Ny sti` låses opp etter tre ulike aktivitetstyper.
 - `Fire på rad` låses opp etter fire sammenhengende uker.
 - `Medhjelper` låses opp når noen registrerer for en kollega.
+- `Initiativtaker` vises i bekreftelsen når en bruker oppretter sitt første
+  Pustelag, og i `/pust meg`. Et nytt lag eller gjentatt innsending skal ikke
+  vise opplåsingen på nytt. Innmelding i andres lag gir ikke prestasjonen.
+- Eksisterende lagopprettere skal se `Initiativtaker` i personlig status,
+  også etter at de har forlatt laget eller utfordringen er avsluttet.
+- Nivå 8 er `Tindevandrer` ved 9 000 Sparks, og nivå 9 er `Gnistlegende` ved
+  15 000. Kontroller neste nivå og gjenstående Sparks i `/pust meg` og etter
+  egenregistrering. Automatiserte tester dekker selve nivågrensene.
 
 ## Pustelag
 

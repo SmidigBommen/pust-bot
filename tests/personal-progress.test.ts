@@ -140,4 +140,28 @@ describe("private progress after self-logging", () => {
     expect(repository.totalSparksForParticipant("U1")).toBe(0);
     expect(client.chat.postEphemeral).not.toHaveBeenCalled();
   });
+
+  it("includes existing creators even after leaving and closing, but not people who only joined", async () => {
+    const team = teams.create({ name: "Helgepust", startDate: "2026-10-01", endDate: "2026-10-02", activityType: null, goal: { kind: "minutes", target: 300 } }, "U1");
+    teams.membership(team.id, "U2", true);
+    teams.membership(team.id, "U1", false);
+    vi.setSystemTime(new Date("2026-10-03T10:00:00Z"));
+    expect(await personalCommand("U1")).toContain("*Initiativtaker*");
+    expect(await personalCommand("U2")).not.toContain("Initiativtaker");
+    await submit();
+    expect(client.chat.postEphemeral.mock.calls[0]![0].text).toBe(await personalCommand("U1"));
+    expect(client.chat.postEphemeral.mock.calls[0]![0].text).toContain("*Initiativtaker*");
+  });
+
+  it.each([
+    [9_000, "Nivå 8: *Tindevandrer*", "6000 Sparks til *Gnistlegende*"],
+    [15_000, "Nivå 9: *Gnistlegende*", "Du har nådd det høyeste nivået"],
+  ])("shows the new level immediately after reaching %i Sparks", async (target, level, next) => {
+    repository.create({ participantSlackId: "U1", registeredBySlackId: "U1", type: "walk_hike", minutes: target - 40, activityDate: "2026-09-24" });
+    await submit();
+    const text = client.chat.postEphemeral.mock.calls[0]![0].text;
+    expect(text).toBe(await personalCommand());
+    expect(text).toContain(level);
+    expect(text).toContain(next);
+  });
 });

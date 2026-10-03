@@ -68,7 +68,7 @@ export function registerSlackHandlers(app: App, dependencies: HandlerDependencie
     if (subcommand === "meg") {
       await respond({
         response_type: "ephemeral",
-        text: buildPersonalStatusMessage(dependencies.repository, command.user_id),
+        text: buildPersonalStatusMessage(dependencies.repository, dependencies.teams, command.user_id),
       });
       return;
     }
@@ -158,7 +158,7 @@ export function registerSlackHandlers(app: App, dependencies: HandlerDependencie
       activity.registeredBySlackId,
     ]);
     const newAwards = [...achievementOwners].flatMap((slackId) =>
-      earnedAchievements(allActivities, slackId, range)
+      earnedAchievements(allActivities, slackId, range, dependencies.teams.hasCreatedTeam(slackId))
         .filter((key) => dependencies.repository.awardAchievement(slackId, key))
         .map((key) => ({ slackId, key })),
     );
@@ -201,7 +201,7 @@ export function registerSlackHandlers(app: App, dependencies: HandlerDependencie
         await client.chat.postEphemeral({
           channel: dependencies.pustChannelId,
           user: activity.participantSlackId,
-          text: buildPersonalStatusMessage(dependencies.repository, activity.participantSlackId),
+          text: buildPersonalStatusMessage(dependencies.repository, dependencies.teams, activity.participantSlackId),
         });
       } catch (error) {
         logger.error("Aktiviteten ble lagret, men den private fremdriftsmeldingen feilet", error);

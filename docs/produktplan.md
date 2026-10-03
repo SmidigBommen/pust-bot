@@ -101,9 +101,10 @@ Foreløpig nivåkurve:
 | 5 | Bålvokter | 1 500 |
 | 6 | Fjellgeit | 3 000 |
 | 7 | Pustemester | 6 000 |
+| 8 | Tindevandrer | 9 000 |
+| 9 | Gnistlegende | 15 000 |
 
-Pustemester er ikke et endelig tak. Flere nivåer og sesongprestasjoner kan
-legges til etter at faktisk bruk er kjent.
+Gnistlegende er høyeste nivå foreløpig. Sparks fortsetter å øke etter 15 000.
 
 ### 5.3 Personlig streak
 
@@ -184,12 +185,19 @@ utsatt til senere versjoner.
 
 ## 8. Prestasjoner og samarbeidsopplevelser
 
-Første lansering bør ha noen få synlige og overraskende prestasjoner:
+Implementerte personlige prestasjoner:
 
 - **Første pust:** Registrer første aktivitet.
 - **Fire på rad:** Oppnå en personlig streak på fire uker.
 - **Ny sti:** Registrer tre ulike aktivitetstyper.
-- **Medhjelper:** Hjelp noen med deres første registrering.
+- **Medhjelper:** Registrer en aktivitet for en kollega.
+- **Initiativtaker:** Opprett ditt første Pustelag. Låses opp ved opprettelse,
+  uten krav om flere medlemmer eller fullført mål. Meldingen vises i lagets
+  bekreftelse én gang. Eksisterende lagopprettere kvalifiserer også, og
+  prestasjonen beholdes etter utmelding og avslutning av laget.
+
+Mulige senere gruppeprestasjoner:
+
 - **Alle med:** Nå kanalens deltakelsesmål.
 - **Langtur:** Nå en felles distansemilepæl.
 

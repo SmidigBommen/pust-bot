@@ -46,6 +46,10 @@ export class TeamRepository {
   close(): void { this.database.close(); }
   today(): string { return osloDate(this.now()); }
 
+  hasCreatedTeam(slackId: string): boolean {
+    return this.database.prepare("SELECT 1 FROM team_challenges WHERE creator_id = ? LIMIT 1").get(slackId) !== undefined;
+  }
+
   find(id: string): TeamChallenge | null {
     const row = this.database.prepare("SELECT * FROM team_challenges WHERE id = ?").get(id) as unknown as TeamRow | undefined;
     if (!row) return null;

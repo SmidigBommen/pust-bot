@@ -75,11 +75,33 @@ describe("Pustelag Slack flows", () => {
     expect(teams.list().teams).toHaveLength(0);
     const saved = await submit("pust_team_confirm", review.view);
     expect(JSON.stringify(saved.view)).toContain("Laget er opprettet");
+    expect(JSON.stringify(saved.view)).toContain("Prestasjon låst opp: Initiativtaker");
     const team = teams.list().teams[0]!;
     expect(team).toMatchObject({ ...input, creatorId: "U1", memberIds: ["U1"] });
-    await submit("pust_team_confirm", review.view);
+    const replay = await submit("pust_team_confirm", review.view);
+    expect(JSON.stringify(replay.view)).not.toContain("Prestasjon låst opp");
     expect(teams.list().teams).toHaveLength(1);
     expect(client.chat.postMessage).not.toHaveBeenCalled();
+  });
+
+  it("does not announce the creator achievement again for a second team or for edits", async () => {
+    const create = (requestId: string) => submit("pust_team_confirm", { private_metadata: JSON.stringify({ requestId, input }) });
+    await create("first");
+    expect(JSON.stringify(await create("second"))).not.toContain("Prestasjon låst opp");
+    expect(teams.list().teams).toHaveLength(2);
+    const team = teams.list().teams[0]!;
+    const edited = await submit("pust_team_confirm", { private_metadata: JSON.stringify({ id: team.id, revision: team.revision, requestId: "edit", input }) });
+    expect(JSON.stringify(edited)).not.toContain("Prestasjon låst opp");
+    expect(activities.awardAchievement("U1", "team_starter")).toBe(false);
+  });
+
+  it("retains a created team even if recording the achievement fails", async () => {
+    vi.spyOn(activities, "awardAchievement").mockImplementationOnce(() => { throw new Error("Write failed"); });
+    const saved = await submit("pust_team_confirm", { private_metadata: JSON.stringify({ requestId: "req", input }) });
+    expect(teams.list().teams).toHaveLength(1);
+    expect(JSON.stringify(saved)).toContain("Laget er opprettet");
+    expect(JSON.stringify(saved)).not.toContain("Prestasjon låst opp");
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining("prestasjonen kunne ikke lagres"), expect.any(Error));
   });
 
   it("changes goal fields while preserving the entered name and dates", async () => {

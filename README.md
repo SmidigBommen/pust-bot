@@ -43,6 +43,32 @@ beskjeden til deltakeren om at noen registrerte for dem beholdes. Redigering og
 sletting utløser heller ikke en ny fremdriftsmelding. Hvis sendingen feiler,
 beholdes aktiviteten og feilen logges. Ingen nye Slack-scopes kreves.
 
+## Nivåer og prestasjoner
+
+Ett registrert aktivitetsminutt gir én Spark. Nivåene bruker samlet antall Sparks:
+
+| Nivå | Navn | Sparks |
+| ---: | --- | ---: |
+| 1 | Første Gnist | 10 |
+| 2 | Medvind | 100 |
+| 3 | Stifinner | 300 |
+| 4 | Turkamerat | 700 |
+| 5 | Bålvokter | 1 500 |
+| 6 | Fjellgeit | 3 000 |
+| 7 | Pustemester | 6 000 |
+| 8 | Tindevandrer | 9 000 |
+| 9 | Gnistlegende | 15 000 |
+
+Personlige prestasjoner er `Første pust` (første aktivitet), `Ny sti` (tre
+aktivitetstyper), `Fire på rad` (fire ukers personlig streak), `Medhjelper`
+(registrering for en kollega) og `Initiativtaker` (opprettelse av første Pustelag).
+
+`Initiativtaker` vises i bekreftelsen når laget opprettes og i personlig status.
+Flere lag eller gjentatt innsending gir ikke en ny opplåsingsmelding.
+Eksisterende lagopprettere kvalifiserer også gjennom laghistorikken. Utmelding
+eller avslutning av laget fjerner ikke prestasjonen. Prestasjonen gir ikke
+ekstra Sparks og trenger ingen nye Slack-scopes eller databasetabeller.
+
 ## Bilder i aktivitetsinnlegg
 
 `/pust logg` har et valgfritt felt for å laste opp ett nytt JPG-, PNG- eller

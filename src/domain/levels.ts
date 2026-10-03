@@ -12,6 +12,8 @@ export const levels: readonly Level[] = [
   { number: 5, name: "Bålvokter", minimumSparks: 1_500 },
   { number: 6, name: "Fjellgeit", minimumSparks: 3_000 },
   { number: 7, name: "Pustemester", minimumSparks: 6_000 },
+  { number: 8, name: "Tindevandrer", minimumSparks: 9_000 },
+  { number: 9, name: "Gnistlegende", minimumSparks: 15_000 },
 ] as const;
 
 export interface LevelProgress {
@@ -30,4 +32,3 @@ export function levelProgress(totalSparks: number): LevelProgress {
     sparksUntilNext: next ? next.minimumSparks - totalSparks : null,
   };
 }
-
