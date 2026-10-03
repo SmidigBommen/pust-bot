@@ -1,10 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
+import { activityTypes } from "../domain/activity.js";
 import { osloDate, TeamRuleError, validateTeam, type TeamChallenge, type TeamInput } from "../domain/team-challenge.js";
 
 interface TeamRow {
   id: string; creator_id: string; name: string; start_date: string; end_date: string;
   goal_kind: TeamInput["goal"]["kind"]; goal_target: number; revision: number;
+  activity_type: TeamInput["activityType"];
 }
 
 /** Owns team rules and atomic membership changes; activities remain in the existing log. */
@@ -33,6 +35,12 @@ export class TeamRepository {
         PRIMARY KEY (team_id, slack_id)
       );
     `);
+    const columns = this.database.prepare("PRAGMA table_info(team_challenges)").all() as { name: string }[];
+    if (!columns.some(column => column.name === "activity_type")) {
+      // NULL preserves the all-activities rule for every existing team.
+      this.database.exec(`ALTER TABLE team_challenges ADD COLUMN activity_type TEXT
+        CHECK (activity_type IS NULL OR activity_type IN (${activityTypes.map(type => `'${type}'`).join(", ")}))`);
+    }
   }
 
   close(): void { this.database.close(); }
@@ -45,6 +53,7 @@ export class TeamRepository {
     return {
       id: row.id, creatorId: row.creator_id, name: row.name, startDate: row.start_date,
       endDate: row.end_date, goal: { kind: row.goal_kind, target: row.goal_target },
+      activityType: row.activity_type,
       memberIds: members.map(member => member.slack_id), revision: row.revision,
     };
   }
@@ -63,8 +72,8 @@ export class TeamRepository {
       validateTeam(input, this.today());
       const id = randomUUID();
       this.database.prepare(`INSERT INTO team_challenges
-        (id, request_id, creator_id, name, start_date, end_date, goal_kind, goal_target)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(id, requestId, creatorId, input.name.trim(), input.startDate, input.endDate, input.goal.kind, input.goal.target);
+        (id, request_id, creator_id, name, start_date, end_date, goal_kind, goal_target, activity_type)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(id, requestId, creatorId, input.name.trim(), input.startDate, input.endDate, input.goal.kind, input.goal.target, input.activityType);
       this.database.prepare("INSERT INTO team_members (team_id, slack_id) VALUES (?, ?)").run(id, creatorId);
       return this.find(id)!;
     });
@@ -74,11 +83,11 @@ export class TeamRepository {
     return this.transaction(() => {
       const team = this.requireTeam(id);
       if (team.creatorId !== actorId) throw new TeamRuleError("Bare den som opprettet laget kan endre utfordringen.");
-      if (this.today() >= team.startDate) throw new TeamRuleError("Utfordringen har startet. Mål og datoer er låst.");
+      if (this.today() >= team.startDate) throw new TeamRuleError("Utfordringen har startet. Aktivitetstype, mål og datoer er låst.");
       if (team.revision !== revision) throw new TeamRuleError("Utfordringen er endret siden skjemaet ble åpnet. Åpne laget på nytt.");
       validateTeam(input, this.today());
-      this.database.prepare(`UPDATE team_challenges SET name = ?, start_date = ?, end_date = ?, goal_kind = ?, goal_target = ?, revision = revision + 1 WHERE id = ?`)
-        .run(input.name.trim(), input.startDate, input.endDate, input.goal.kind, input.goal.target, id);
+      this.database.prepare(`UPDATE team_challenges SET name = ?, start_date = ?, end_date = ?, goal_kind = ?, goal_target = ?, activity_type = ?, revision = revision + 1 WHERE id = ?`)
+        .run(input.name.trim(), input.startDate, input.endDate, input.goal.kind, input.goal.target, input.activityType, id);
       return this.find(id)!;
     });
   }

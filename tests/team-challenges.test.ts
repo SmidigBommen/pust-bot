@@ -9,7 +9,7 @@ import { TeamRepository } from "../src/storage/team-repository.js";
 import { teamStatusText } from "../src/slack/team-views.js";
 import { createBackup } from "../src/backup.js";
 
-const input: TeamInput = { name: "Helgepust", startDate: "2026-10-02", endDate: "2026-10-04", goal: { kind: "participation", target: 100 } };
+const input: TeamInput = { activityType: null, name: "Helgepust", startDate: "2026-10-02", endDate: "2026-10-04", goal: { kind: "participation", target: 100 } };
 
 describe("date-range Pustelag", () => {
   let folder: string;
@@ -181,6 +181,77 @@ describe("date-range Pustelag", () => {
     expect(pages.map(page => page.hasMore)).toEqual([true, true, false]);
     expect(new Set(pages.flatMap(page => page.teams.map(team => team.id))).size).toBe(23);
   });
+
+  it.each(["minutes", "participation"] as const)("counts only matching activity for a %s goal, including on late joining", kind => {
+    const team = teams.create({ ...input, activityType: "run", goal: { kind, target: kind === "minutes" ? 60 : 100 } }, "U1");
+    const unrestricted = teams.create(input, "U1");
+    log("U1", "2026-10-02", 200);
+    const run = activities.create({ participantSlackId: "U2", registeredBySlackId: "HELPER", type: "run", minutes: 60, distanceKm: 8, activityDate: "2026-10-02" });
+    now("2026-10-04T10:00:00Z");
+    expect(progress(team.id).progress.activityCount).toBe(0);
+    teams.membership(team.id, "U2", true);
+    expect(progress(team.id)).toMatchObject({
+      value: kind === "minutes" ? 60 : 1, target: kind === "minutes" ? 60 : 2,
+      reached: kind === "minutes",
+      progress: { participants: 1, totalMinutes: 60, distanceKm: 8, activityCount: 1,
+        byType: [{ type: "run", minutes: 60, distanceKm: 8 }] },
+    });
+    expect(progress(unrestricted.id).progress.totalMinutes).toBe(200);
+    expect(activities.totalSparksForParticipant("U1")).toBe(200);
+    expect(activities.listBetween(input.startDate, input.endDate)).toHaveLength(2);
+    activities.updateForParticipant(run.id, "U2", { ...run, type: "cycle" });
+    expect(progress(team.id).progress.totalMinutes).toBe(0);
+    activities.updateForParticipant(run.id, "U2", { ...run, minutes: 80 });
+    expect(progress(team.id).progress.totalMinutes).toBe(80);
+    teams.membership(team.id, "U2", false);
+    expect(progress(team.id).progress.totalMinutes).toBe(0);
+    teams.membership(team.id, "U2", true);
+    expect(progress(team.id).progress.totalMinutes).toBe(80);
+    activities.deleteControlledBy(run.id, "U2");
+    expect(progress(team.id).progress.participants).toBe(0);
+  });
+
+  it("allows the creator to change the activity rule only before the start and persists it", () => {
+    const team = teams.create(input, "U1");
+    const restricted = { ...input, activityType: "ski" as const };
+    expect(() => teams.edit(team.id, "U2", team.revision, restricted)).toThrow("Bare");
+    const updated = teams.edit(team.id, "U1", team.revision, restricted);
+    teams.close();
+    teams = new TeamRepository(path, () => clock);
+    expect(teams.find(team.id)?.activityType).toBe("ski");
+    expect(() => teams.edit(team.id, "U1", team.revision, input)).toThrow("endret siden");
+    const all = teams.edit(team.id, "U1", updated.revision, input);
+    expect(all.activityType).toBeNull();
+    now("2026-10-02T10:00:00Z");
+    expect(() => teams.edit(team.id, "U1", all.revision, restricted)).toThrow("låst");
+    expect(teams.find(team.id)?.activityType).toBeNull();
+  });
+
+  it("migrates existing teams to all activities and preserves memberships, dates, goals and totals", () => {
+    const legacyPath = join(folder, "legacy-teams.sqlite");
+    const legacyActivities = new ActivityRepository(legacyPath);
+    for (const type of ["run", "strength"] as const) legacyActivities.create({ participantSlackId: "U1", registeredBySlackId: "U1", type, minutes: 30, activityDate: input.startDate });
+    const database = new DatabaseSync(legacyPath);
+    database.exec(`
+      CREATE TABLE team_challenges (id TEXT PRIMARY KEY, request_id TEXT NOT NULL UNIQUE,
+        creator_id TEXT NOT NULL, name TEXT NOT NULL, start_date TEXT NOT NULL, end_date TEXT NOT NULL,
+        goal_kind TEXT NOT NULL, goal_target INTEGER NOT NULL, revision INTEGER NOT NULL DEFAULT 0);
+      CREATE TABLE team_members (team_id TEXT NOT NULL, slack_id TEXT NOT NULL, PRIMARY KEY(team_id, slack_id));
+      INSERT INTO team_challenges VALUES ('old', 'request', 'U1', 'Helgepust', '2026-10-02', '2026-10-04', 'participation', 100, 2);
+      INSERT INTO team_members VALUES ('old', 'U1'), ('old', 'U2');
+    `);
+    database.close();
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const migrated = new TeamRepository(legacyPath, () => clock);
+      try {
+        const team = migrated.find("old")!;
+        expect(team).toEqual({ ...input, id: "old", creatorId: "U1", memberIds: ["U1", "U2"], revision: 2 });
+        const result = teamProgress(team, legacyActivities.listThrough(input.endDate), input.endDate);
+        expect(result.progress.totalMinutes).toBe(60);
+        expect(result.progress.byType).toHaveLength(2);
+      } finally { migrated.close(); }
+    }
+  });
 });
 
 describe("challenge input rules", () => {
@@ -192,6 +263,7 @@ describe("challenge input rules", () => {
     { ...input, goal: { kind: "participation", target: 101 } },
     { ...input, goal: { kind: "minutes", target: 1.5 } },
     { ...input, goal: { kind: "minutes", target: NaN } },
+    { ...input, activityType: "unknown" },
   ] as TeamInput[])("rejects invalid input %#", invalid => {
     expect(() => validateTeam(invalid, "2026-10-01")).toThrow();
   });

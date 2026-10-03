@@ -73,13 +73,20 @@ andel medlemmer som registrerer aktivitet (100 prosent betyr alle) eller
 samlet antall minutter. Skjemaet viser en oppsummering før lagring. Oppretteren
 blir selv med; et lag trenger minst to medlemmer for å nå målet.
 
+«Hvilke aktiviteter teller?» lar oppretteren velge alle aktivitetstyper eller
+én bestemt type, for eksempel bare løping. Regelen vises i laglisten, status,
+oppsummeringen før lagring og delte innlegg. Ved valg av én type teller bare
+denne typen mot både minuttmål, deltakelse og lagets aktivitetstotaler. Logg som
+vanlig; andre aktiviteter teller fortsatt i din personlige og kanalens status.
+Eksisterende lag beholder regelen «Alle aktivitetstyper teller».
+
 Begge datoene er inklusive i Oslo-tid. Medlemmer kan bli med og forlate laget
-helt til sluttdatoen er over. Alle aktivitetene deres fra perioden teller,
+helt til sluttdatoen er over. Aktivitetene som passer lagets regel fra perioden teller,
 også aktiviteter fra før innmelding. Deltakelsesmålet følger medlemslisten og
 rundes opp, mens minuttmålet står fast. Utmelding fjerner bare bidraget til
 laget. Samme aktivitet kan bidra til flere lag uten å dobles i kanalens tall.
 
-Oppretteren kan redigere utfordringen før startdatoen. Mål og datoer er låst
+Oppretteren kan redigere utfordringen før startdatoen. Aktivitetstype, mål og datoer er låst
 fra start. Etter sluttdatoen er medlemslisten låst, og laget finnes under
 «Avsluttede utfordringer». Aktivitetsendringer og etterregistrering kan fortsatt
 endre tallene. Fremtidsdaterte aktiviteter teller først på aktivitetsdatoen.
@@ -91,7 +98,9 @@ hele kanalen fortsetter som før.
 
 Ingen nye Slack-scopes eller miljøvariabler kreves. Ta SQLite-backup før første
 deploy: oppstart legger til `team_challenges` og `team_members` i eksisterende
-database. Eksisterende aktiviteter beholdes.
+database. Versjonen med aktivitetsvalg legger til `activity_type` i
+`team_challenges`; tom verdi betyr alle typer. Ta backup før denne migreringen
+også. Eksisterende aktiviteter beholdes.
 
 ## Automatisk ukessammendrag
 

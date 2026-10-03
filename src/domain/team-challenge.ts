@@ -1,4 +1,4 @@
-import type { Activity } from "./activity.js";
+import { isActivityType, type Activity, type ActivityType } from "./activity.js";
 import { calculateWeeklyProgress } from "./weekly-progress.js";
 
 export type TeamGoal = { kind: "participation"; target: number } | { kind: "minutes"; target: number };
@@ -8,6 +8,7 @@ export interface TeamInput {
   startDate: string;
   endDate: string;
   goal: TeamGoal;
+  activityType: ActivityType | null;
 }
 
 export interface TeamChallenge extends TeamInput {
@@ -32,6 +33,9 @@ function validDate(value: string): boolean {
 }
 
 export function validateTeam(input: TeamInput, today: string): void {
+  if (input.activityType !== null && !isActivityType(input.activityType)) {
+    throw new TeamRuleError("Velg alle aktivitetstyper eller én gyldig aktivitetstype.", "activity_type");
+  }
   if (!input.name.trim() || input.name.trim().length > 80 || /[\r\n]/.test(input.name)) {
     throw new TeamRuleError("Navnet må være mellom 1 og 80 tegn på én linje.");
   }
@@ -56,7 +60,8 @@ export function teamProgress(team: TeamChallenge, activities: readonly Activity[
   const members = new Set(team.memberIds);
   const progress = calculateWeeklyProgress(activities.filter(activity =>
     members.has(activity.participantSlackId) && activity.activityDate >= team.startDate &&
-    activity.activityDate <= team.endDate && activity.activityDate <= today));
+    activity.activityDate <= team.endDate && activity.activityDate <= today &&
+    (team.activityType === null || activity.type === team.activityType)));
   const target = team.goal.kind === "participation"
     ? Math.ceil(members.size * team.goal.target / 100) : team.goal.target;
   const value = team.goal.kind === "participation" ? progress.participants : progress.totalMinutes;

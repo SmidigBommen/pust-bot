@@ -153,18 +153,23 @@ nullstilling eller lagstreak i denne versjonen.
 - `/pust lag` åpner oversikten over åpne og avsluttede utfordringer.
 - Oppretteren velger navn, datoer og ett mål for hele perioden: deltakelse i
   prosent (100 betyr alle) eller samlet antall minutter. Deltakelse er standard.
+- Oppretteren velger alle aktivitetstyper eller én bestemt type. Bare
+  aktiviteter som passer valget teller mot mål og lagets totaler. Regelen vises
+  i oversikten, status, opprettelsesbekreftelsen og delte kanalinnlegg.
+  Eksisterende lag beholder alle aktivitetstyper.
 - Oppretteren blir medlem ved opprettelse. Andre melder seg inn selv. Det er
   ingen øvre medlemsgrense; minst to medlemmer kreves for å nå et lagmål.
 - Et medlem kan være med i flere lag. Aktivitet logges som vanlig og teller
   én gang per aktuelt lag, og fortsatt bare én gang i kanalens og personens tall.
-- Innmelding og utmelding er åpen til og med sluttdatoen. Alle nåværende
-  medlemmers aktiviteter fra hele perioden teller, også fra før innmelding.
+- Innmelding og utmelding er åpen til og med sluttdatoen. Nåværende medlemmers
+  aktiviteter som passer lagets regel teller fra hele perioden, også fra før innmelding.
 - Ved utmelding tas personens aktiviteter ut av lagets fremdrift. De beholdes
   i personens historikk og kanalens tall. Ved ny innmelding teller de igjen.
 - Deltakelsesmålet følger nåværende medlemsliste og rundes opp til hele personer.
   75 prosent av fem medlemmer betyr fire deltakere. Minuttmålet endres ikke
   ved inn- eller utmelding, og har ingen grense per person.
-- Oppretteren kan endre navn, datoer og mål før startdatoen. Deretter er de låst.
+- Oppretteren kan endre navn, aktivitetstype, datoer og mål før startdatoen.
+  Deretter er de låst.
 - Underveis vises fremdrift med dagens medlemsliste. Etter sluttdatoen låses
   medlemslisten og status viser resultatet. Etterregistrering, redigering og
   sletting av aktiviteter kan fortsatt oppdatere tallene; dette er ikke et

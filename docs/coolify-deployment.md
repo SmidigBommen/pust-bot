@@ -197,6 +197,14 @@ ovenfor. Oppstart oppretter `team_challenges` og `team_members` i samme database
 som aktivitetene. Migreringen er additiv og kan kjøres flere ganger. Rollback
 til en tidligere appversjon lar lagtabellene ligge, men skjuler lagfunksjonen.
 
+Versjonen med aktivitetsvalg legger til den nullable kolonnen `activity_type` i
+`team_challenges`. Ta og verifiser SQLite-backup før første deploy av denne
+migreringen. Eksisterende lag får `NULL`, som betyr alle aktivitetstyper.
+Kontroller etter deploy at eksisterende lag viser samme tall, og at nye lag
+med én valgt type filtrerer både deltakere og minutter. Tidligere versjoner
+av lagfunksjonen ignorerer denne kolonnen og vil telle alle typer. De er derfor
+ikke egnet som rollback når lag med én aktivitetstype er opprettet.
+
 Ingen nye miljøvariabler eller Slack-scopes er nødvendig. Kommandoen er fortsatt
 `/pust`; `lag` er et nytt underkommandoord. Den oppdaterte usage-hinten i manifestet
 er kun hjelpetekst og krever ikke reinstallasjon for at `/pust lag` skal virke.

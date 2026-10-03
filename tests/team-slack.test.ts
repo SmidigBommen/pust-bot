@@ -7,13 +7,14 @@ import { TeamRepository } from "../src/storage/team-repository.js";
 import { registerSlackHandlers } from "../src/slack/register-handlers.js";
 import { teamDetailView, teamFormView, teamListView } from "../src/slack/team-views.js";
 
-const input: TeamInput = { name: "Helgepust", startDate: "2026-10-02", endDate: "2026-10-04", goal: { kind: "participation", target: 100 } };
+const input: TeamInput = { activityType: null, name: "Helgepust", startDate: "2026-10-02", endDate: "2026-10-04", goal: { kind: "participation", target: 100 } };
 // The harness exercises registered Bolt callbacks with Slack-shaped payloads and real repositories.
 type Handler = (args: any) => Promise<void>;
 function state(value: TeamInput) {
   return { values: {
     name: { value: { value: value.name } }, start: { value: { selected_date: value.startDate } },
     end: { value: { selected_date: value.endDate } },
+    activity_type: { value: { selected_option: { value: value.activityType ?? "all" } } },
     goal: { pust_team_goal: { selected_option: { value: value.goal.kind } } },
     [value.goal.kind]: { value: { value: String(value.goal.target) } },
   } };
@@ -180,5 +181,49 @@ describe("Pustelag Slack flows", () => {
       expect(new Set(ids).size).toBe(ids.length);
       expect(ids.length).toBeLessThanOrEqual(5);
     }
+  });
+
+  it("keeps the chosen activity through goal changes, review, back navigation and saving", async () => {
+    const restricted: TeamInput = { ...input, activityType: "run" };
+    const form = teamFormView({ requestId: "req" }, restricted);
+    const changed = await action("pust_team_goal", "", { ...form, state: state(restricted) } as Partial<ModalView>, "U1", { selected_option: { value: "minutes" } });
+    expect(changed.blocks).toContainEqual(expect.objectContaining({ block_id: "activity_type", element: expect.objectContaining({ initial_option: { value: "run", text: { type: "plain_text", text: "Bare løping" } } }) }));
+    const review = await submit("pust_team_form", { ...changed, state: state({ ...restricted, goal: { kind: "minutes", target: 300 } }) });
+    expect(JSON.stringify(review.view)).toContain("Bare løping teller");
+    const back = await action("pust_team_revise", "back", review.view);
+    expect(JSON.stringify(back)).toContain('"initial_option":{"text":{"type":"plain_text","text":"Bare løping"},"value":"run"}');
+    await submit("pust_team_confirm", review.view);
+    const team = teams.list().teams[0]!;
+    expect(team.activityType).toBe("run");
+    expect(team.goal).toEqual({ kind: "minutes", target: 300 });
+    const list = await action("pust_team_list", "false:0", {});
+    expect(JSON.stringify(list)).toContain("Bare løping teller");
+    const detail = await action("pust_team_open", team.id, {});
+    expect(JSON.stringify(detail)).toContain("Bare løping teller");
+    await action("pust_team_share", team.id, {});
+    expect(client.chat.postMessage.mock.calls[0]![0].text).toContain("Bare løping teller");
+  });
+
+  it("labels all-activity teams in the list, review and shared status", async () => {
+    const review = await submit("pust_team_form", { private_metadata: JSON.stringify({ requestId: "req" }), state: state(input) });
+    expect(JSON.stringify(review.view)).toContain("Alle aktivitetstyper teller");
+    await submit("pust_team_confirm", review.view);
+    const team = teams.list().teams[0]!;
+    expect(JSON.stringify(await action("pust_team_list", "false:0", {}))).toContain("Alle aktivitetstyper teller");
+    await action("pust_team_share", team.id, {});
+    expect(client.chat.postMessage.mock.calls[0]![0].text).toContain("Alle aktivitetstyper teller");
+  });
+
+  it("rejects an invalid activity choice on the correct form field", async () => {
+    const invalid = { ...input, activityType: "invalid" } as unknown as TeamInput;
+    const result = await submit("pust_team_form", { private_metadata: JSON.stringify({ requestId: "req" }), state: state(invalid) });
+    expect(result).toMatchObject({ response_action: "errors", errors: { activity_type: expect.any(String) } });
+    expect(teams.list().teams).toHaveLength(0);
+  });
+
+  it("accepts a review opened before activity selection was introduced as all activities", async () => {
+    const { activityType, ...legacy } = input;
+    await submit("pust_team_confirm", { private_metadata: JSON.stringify({ requestId: "old-form", input: legacy }) });
+    expect(teams.list().teams[0]?.activityType).toBeNull();
   });
 });

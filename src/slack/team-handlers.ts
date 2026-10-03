@@ -32,7 +32,7 @@ export function registerTeamHandlers(app: App, { teams, repository, pustChannelI
       switch (action.action_id) {
         case "pust_team_create":
           view = teamFormView({ requestId: randomUUID() }, {
-            name: "", startDate: teams.today(), endDate: teams.today(), goal: { kind: "participation", target: 100 },
+            name: "", startDate: teams.today(), endDate: teams.today(), goal: { kind: "participation", target: 100 }, activityType: null,
           });
           break;
         case "pust_team_list": {
@@ -49,7 +49,7 @@ export function registerTeamHandlers(app: App, { teams, repository, pustChannelI
         case "pust_team_edit": {
           const team = teams.find(id);
           if (!team || team.creatorId !== viewer) throw new TeamRuleError("Bare den som opprettet laget kan endre utfordringen.");
-          if (teams.today() >= team.startDate) throw new TeamRuleError("Utfordringen har startet. Mål og datoer er låst.");
+          if (teams.today() >= team.startDate) throw new TeamRuleError("Utfordringen har startet. Aktivitetstype, mål og datoer er låst.");
           view = teamFormView({ id, revision: team.revision, requestId: randomUUID() }, team);
           break;
         }
@@ -119,6 +119,8 @@ export function registerTeamHandlers(app: App, { teams, repository, pustChannelI
     let result: ModalView;
     try {
       const data = JSON.parse(view.private_metadata) as TeamConfirmation;
+      // A review opened before this field was introduced still means all activities.
+      data.input.activityType ??= null;
       const team = data.id
         ? teams.edit(data.id, body.user.id, data.revision!, data.input)
         : teams.create(data.input, body.user.id, data.requestId);

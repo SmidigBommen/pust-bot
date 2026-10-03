@@ -79,6 +79,16 @@ Bruk denne sjekklisten i `#pust` før en ny versjon regnes som klar.
 - `/pust lag` åpner oversikten privat på både mobil og datamaskin.
 - Opprett et lag fra fredag til søndag med standardmålet om at alle deltar.
   Kontroller datoer og mål på «Se over» før «Opprett». Ingen kanalpost sendes.
+- Opprett ett lag for alle aktivitetstyper og ett for bare løping. Regelen skal
+  vises i laglisten, status, «Se over» og delte kanalinnlegg. Bytt måltype i
+  skjemaet og gå tilbake fra «Se over»: aktivitetsvalget skal beholdes.
+- Registrer løping og styrke. Løpelaget skal bare telle løping i minutter,
+  kilometer, antall aktiviteter og deltakelse. Det andre laget og kanalens
+  status skal telle begge. Gjenta med både minuttmål og deltakelsesmål.
+- Endre aktivitetstypen på en registrering. Lagets fremdrift skal følge den nye
+  typen. En sen innmelding tar med tidligere aktiviteter som passer lagets regel.
+- Endre lagets aktivitetstype før start. Etter start skal valget være låst.
+  Eksisterende lag skal vise «Alle aktivitetstyper teller» og beholde tallene.
 - Bytt mellom deltakelse og minutter i skjemaet. Navn og datoer beholdes, og
   riktig målfelt vises. Ugyldige datoer, prosent eller minutter avvises.
 - Del status i `#pust`. En annen bruker kan åpne laget fra knappen og melde seg
@@ -88,7 +98,7 @@ Bruk denne sjekklisten i `#pust` før en ny versjon regnes som klar.
 - Med tre av tre deltakere skal en fjerde innmelding endre fremdriften til tre
   av fire, med mindre den nye personen allerede har aktivitet i perioden.
 - 75 prosent av fem medlemmer krever fire deltakere. Minuttmålet endres ikke
-  ved innmelding. Alle registrerte minutter teller.
+  ved innmelding. Alle registrerte minutter som passer lagets regel teller.
 - Forlat laget og bekreft dialogen. Bidraget forsvinner bare fra dette laget.
   Bli med igjen og bekreft at hele periodens aktiviteter teller igjen.
 - Bli med på to lag med overlappende perioder. Aktiviteten bidrar til begge,
