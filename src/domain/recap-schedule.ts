@@ -11,7 +11,7 @@ const osloHour = new Intl.DateTimeFormat("en-GB", {
   hourCycle: "h23",
 });
 
-function slotForWeek(range: DateRange): RecapSlot {
+export function slotForWeek(range: DateRange): RecapSlot {
   // By Sunday noon Oslo's summer/winter clock change has already happened.
   const noon = new Date(`${range.end}T12:00:00Z`);
   const hoursUntilTen = 22 - Number(osloHour.format(noon));

@@ -348,3 +348,29 @@ Etter fire uker vurderes MVP-en ut fra:
   Docker-volumer.
 - Kildekode monteres inn i utviklingscontaineren for rask tilbakemelding.
 - Hemmeligheter lagres bare i en ignorert `.env`-fil og aldri i Git.
+
+
+## 17. Offentlig ukearkiv
+
+Første nettversjon viser kanalens samlede ukesrapporter på
+`https://pust.smidigbommen.no`. Den er offentlig, lesbar uten innlogging og ber
+søkemotorer om ikke å indeksere sidene. Ingen navn, individuelle resultater,
+kommentarer eller aktivitetsbilder publiseres på nettstedet.
+
+- Rapporter fryses søndag kl. 22:00 Oslo-tid, og Slack beholder hele sin
+  oppsummering med en lenke til samme rapport.
+- Siste rapport er forsiden. Uker har permanente lenker, forrige/neste-navigasjon
+  og et arkiv gruppert etter år.
+- Tid, deltakelse og kjente mål står sentralt. Aktivitetstyper har egne
+  minutt- og distansetall. Ingen felles distansemål eller individuelle topplister.
+- Åtte ukers trend viser minutter og deltakelse med nøytrale farger.
+- Tomme uker får rapport, men ingen Slack-post.
+- Historisk import merkes som rekonstruert fra dagens aktivitetslogg. Ukjente
+  mål, medlemstall og gruppestreak vises ikke.
+- Manglende rapporter etter nedetid opprettes senere med tydelig merking og
+  faktisk opprettelsestid. Slack får ingen ettersending.
+- Lagrede rapporter endres ikke etter senere endringer i aktivitetsloggen.
+
+Neste separate leveranse kan legge til Slack-innlogging og kontroll av
+medlemskap i `#pust`. Det vil begrense fremtidig tilgang, men kan ikke trekke
+tilbake tidligere delte kopier av offentlige rapporter.

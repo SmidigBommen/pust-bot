@@ -9,8 +9,8 @@ Produktretning, MVP og videre utvikling er dokumentert i
 
 ## Lokal utvikling
 
-Hele utviklingsmiljøet kjører i Docker. Node, npm-pakker og SQLite-data holdes i
-containere og navngitte Docker-volumer.
+Utviklingsmiljøet kan kjøres i Docker. Node, npm-pakker og SQLite-data holdes da i
+containere og navngitte Docker-volumer. Nettarkivet vises på `http://localhost:3000`.
 
 ```bash
 cp .env.example .env
@@ -24,6 +24,10 @@ docker compose run --rm app npm test
 docker compose run --rm app npm run typecheck
 docker compose run --rm app npm run build
 ```
+
+For å se nettarkivet med eksempeldata uten Slack eller produksjonsdata, kjør
+`npm run preview:archive` med installerte utviklingsavhengigheter. Forhåndsvisningen
+bruker bare en database i minnet og åpnes på `http://localhost:3001`.
 
 Stopp appen med `docker compose down`. Ikke bruk `-v` med mindre også de lokalt
 lagrede Pust-dataene med vilje skal slettes.
@@ -139,12 +143,13 @@ for tidligere uker, men endrer ikke allerede publiserte øyeblikksbilder.
 
 Pust poster ukens status i `#pust` søndag kl. 22:00 i `Europe/Oslo`, med tittelen
 «Ukens trening søndag kl. 22:00». Sammendraget bruker samme beregning som
-`/pust status`, uten kanalvarsling. Uker uten registrert aktivitet hoppes over.
+`/pust status`, uten kanalvarsling. Uker uten registrert aktivitet hoppes over i Slack, men lagres i nettarkivet.
 Innlegget beholdes som et øyeblikksbilde selv om aktiviteter senere registreres,
 redigeres eller slettes. Manuelle statusinnlegg påvirker ikke utsendingen.
 
 En timer i boten sjekker klokken ved hvert minutt, uten databaseoppslag før
-sammendraget skal sendes. En allerede kjørende bot kan sende i løpet av minuttet
+sammendraget skal sendes. Når nettarkivet er aktivert, lagres rapporten før
+Slack kontaktes. Begge viser dermed samme øyeblikksbilde. En allerede kjørende bot kan sende i løpet av minuttet
 22:00:00–22:00:59. Hvis boten starter etter fristen, eller timeren blir forsinket
 utover dette minuttet, blir det ingen ettersending.
 
@@ -163,3 +168,49 @@ versjon.
 
 Se [Coolify-runbooken](docs/coolify-deployment.md) for produksjonsoppsett,
 hemmeligheter, vedvarende SQLite-lagring, backup og deploy-prosedyre.
+
+## Offentlig ukearkiv
+
+`https://pust.smidigbommen.no` viser siste publiserte rapport. Hver uke har en
+permanent lenke på `/uker/ÅÅÅÅ-MM-DD`, med mandagens dato. `/arkiv` grupperer
+rapportene etter ISO-ukeår. Rapportene viser tid, deltakere, mål og gruppestreak
+når disse er kjent, samt minutter og registrert distanse per aktivitetstype.
+Diagrammene viser opptil åtte publiserte uker frem til valgt rapport. De har
+klikkbare søyler og en tilgjengelig tabell med tall og rapportgrunnlag.
+
+Arkivet er offentlig uten innlogging i første versjon. Det viser ingen navn,
+Slack-ID-er, enkeltaktiviteter, kommentarer eller bilder. `robots.txt`, HTML og
+HTTP-headere ber søkemotorer la være å indeksere innholdet. Dette er ikke
+adgangskontroll. Alle rapportforespørsler går gjennom ett sted i webserveren,
+der Slack-innlogging og medlemskontroll kan kobles inn i en senere leveranse.
+
+Rapporten fryses søndag kl. 22:00 i `Europe/Oslo`, før kalenderuken er over.
+Etterregistreringer, redigeringer og slettinger endrer ikke publiserte rapporter.
+Mål, konfigurert medlemstall og gruppestreak lagres samtidig med tallene.
+Gruppestreak bruker samme beregning som Slack ved publisering. Arkivet henter
+ikke en ny medlemsliste fra Slack.
+
+Ved første aktivering importeres tidligere uker fra den eldste gjenværende
+aktiviteten til siste passerte publiseringstidspunkt, også uker uten aktivitet.
+Disse merkes «Rekonstruert fra aktivitetsloggen». De viser data ved import og
+kan avvike fra opprinnelige Slack-innlegg. Historiske mål, medlemstall og
+streaks er ukjente og vises ikke. Importen kjøres én gang og er transaksjonell.
+Etterregistrering av enda eldre aktivitet utvider ikke importen senere.
+
+Når boten har vært nede ved publisering, opprettes manglende rapporter ved
+oppstart. En forsinket timer henter også inn manglende uker. Disse merkes som
+opprettet senere, med faktisk tidspunkt og uten antatte historiske mål.
+De kan inkludere endringer gjort etter planlagt cutoff. Slack sender fortsatt
+ikke ettersendinger. En mislykket Slack-sending påvirker ikke den lagrede
+rapporten. En mislykket arkivskriving forsøkes igjen ved neste minutt.
+
+`PUST_ARCHIVE_ENABLED=true` aktiverer arkiv og webserver, uavhengig av
+`PUST_WEEKLY_RECAP_ENABLED`. Standardverdien i appen er `false`; begge Compose-
+filene aktiverer arkivet. `PUST_PUBLIC_URL` er websidens HTTP(S)-adresse uten sti,
+og brukes i Slack-lenken. Produksjon bruker `https://pust.smidigbommen.no`.
+Med arkivet aktivert lytter webserveren på `0.0.0.0:3000`, ellers er bare den
+interne helsesjekken tilgjengelig. Ingen nye npm-pakker eller Slack-scopes kreves.
+
+Ta SQLite-backup før deploy. Oppstart oppretter `report_archives` og
+`weekly_reports` i eksisterende database. Behold disse tabellene ved rollback;
+ellers mistes frosne rapporter og importstatus. Backupkommandoen inkluderer dem.

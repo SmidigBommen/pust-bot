@@ -22,6 +22,8 @@ interface ActivityRow {
 export class ActivityRepository {
   private readonly database: DatabaseSync;
 
+  close(): void { this.database.close(); }
+
   constructor(path: string) {
     if (path !== ":memory:") mkdirSync(dirname(path), { recursive: true });
     this.database = new DatabaseSync(path);

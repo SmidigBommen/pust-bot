@@ -8,6 +8,8 @@ export interface Config {
   weeklyMinutesGoal: number;
   healthPort: number;
   weeklyRecapEnabled: boolean;
+  archiveEnabled: boolean;
+  publicUrl: string;
 }
 
 function required(name: string): string {
@@ -27,7 +29,21 @@ export function loadConfig(): Config {
     weeklyMinutesGoal: numberSetting("PUST_WEEKLY_MINUTES_GOAL", 240),
     healthPort: numberSetting("HEALTH_PORT", 3000),
     weeklyRecapEnabled: booleanSetting("PUST_WEEKLY_RECAP_ENABLED", false),
+    archiveEnabled: booleanSetting("PUST_ARCHIVE_ENABLED", false),
+    publicUrl: publicUrlSetting(),
   };
+}
+
+function publicUrlSetting(): string {
+  const value = process.env.PUST_PUBLIC_URL ?? "http://localhost:3000";
+  try {
+    const url = new URL(value);
+    if (!["http:", "https:"].includes(url.protocol) || url.username || url.password ||
+        url.pathname !== "/" || url.search || url.hash) throw new Error();
+    return url.origin;
+  } catch {
+    throw new Error("PUST_PUBLIC_URL må være en HTTP(S)-adresse uten sti, brukerinformasjon eller parametere.");
+  }
 }
 
 function booleanSetting(name: string, fallback: boolean): boolean {

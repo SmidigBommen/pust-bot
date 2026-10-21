@@ -1,8 +1,8 @@
 # Deployere Pust med Coolify
 
-Pust bruker Slack Socket Mode og kjører derfor som en bakgrunnsprosess. Serveren
-trenger utgående HTTPS/WebSocket-tilgang til Slack på port 443, men Pust trenger
-ikke et offentlig domene, en inngående port eller en reverse proxy-rute.
+Pust bruker Slack Socket Mode for boten og en HTTP-server for det offentlige
+ukearkivet. Serveren trenger utgående HTTPS/WebSocket-tilgang til Slack på port
+443. Coolify ruter `https://pust.smidigbommen.no` til appens port 3000.
 
 ## Eksisterende ressurs og automatisk deploy
 
@@ -57,6 +57,7 @@ kildekode og kjører utviklingsverktøy. Produksjon skal bruke en separat
 - Bygger `production`-steget i `Dockerfile`.
 - Kjører den kompilerte appen med `npm start`.
 - Ikke monterer kildekoden.
+- Eksponerer containerport 3000 internt til Coolifys reverse proxy.
 - Bruker et vedvarende volum for `/app/data`.
 - Krever Slack-hemmelighetene før deploy starter.
 - Starter containeren på nytt ved feil.
@@ -89,8 +90,8 @@ volumes:
 
 Produksjonsimaget oppretter `/app/data` med eierskap til den ikke-priviligerte
 `node`-brukeren. Compose inneholder også en intern health check og kontrollert
-stopptid. Health-endepunktet bindes bare til `127.0.0.1` inne i containeren og
-eksponeres ikke offentlig.
+stopptid. Med arkivet aktivert lytter webserveren på `0.0.0.0:3000` og tilbyr også
+`/health`. Uten arkiv lytter helsesjekken bare på `127.0.0.1`.
 
 ## Publiser Git-repositoriet
 
@@ -109,7 +110,8 @@ Deploy skal følge `main`-branchen.
 3. Velg `main` som branch.
 4. Velg Docker Compose som build pack.
 5. Sett Compose location til `/compose.coolify.yaml`.
-6. Ikke konfigurer domene eller offentlig port.
+6. Knytt `https://pust.smidigbommen.no` til Compose-tjenesten `app`, port 3000.
+   Bruk Coolifys proxy; ikke publiser en port direkte på verten.
 7. Behold én app-instans.
 
 Pust skal ikke skaleres horisontalt mens den bruker SQLite. Flere samtidige
@@ -220,3 +222,35 @@ aktivitetene. Kanalens søndagssammendrag får ingen ekstra laginnlegg.
 - [Coolify: Applications](https://coolify.io/docs/applications/index)
 - [Coolify: Environment Variables](https://coolify.io/docs/knowledge-base/environment-variables)
 - [Coolify: Persistent Storage](https://coolify.io/docs/knowledge-base/persistent-storage)
+
+
+## Deploy av offentlig ukearkiv
+
+DNS og TLS ble kontrollert 21. oktober 2026. `pust.smidigbommen.no` og
+`coolify.smidigbommen.no` pekte da til samme server. Før webversjonen var
+Pust-ressursen uten domene og den offentlige adressen svarte 503.
+
+1. Ta en konsistent SQLite-backup med eksisterende backupkommando og behold
+   backupen utenfor containerens midlertidige filsystem.
+2. Kjør tester, typesjekk og build før push. Oppstartsmigreringen oppretter
+   `report_archives` og `weekly_reports` uten å endre aktivitetsdata.
+3. Bruk `PUST_ARCHIVE_ENABLED=true` og
+   `PUST_PUBLIC_URL=https://pust.smidigbommen.no`. Produksjons-Compose har disse
+   standardverdiene. `HEALTH_PORT=3000` er fortsatt porten som brukes.
+4. Konfigurer domenet for eksisterende Compose-tjeneste `app` på port 3000 i
+   Coolify. Behold eksisterende ressurs og datavolum.
+5. Deploy validert commit. Første oppstart importerer eldre uker transaksjonelt
+   som rekonstruerte rapporter. Den kontakter ikke Slack for historiske innlegg.
+6. Kontroller `/health`, `/`, `/arkiv`, en permanent ukelenke og `/robots.txt`.
+   Kontroller at ukjent URL gir 404 og rapporter har `X-Robots-Tag: noindex, nofollow`.
+7. Kontroller neste ordinære søndagsinnlegg manuelt. Slack-post og nettsted skal
+   bruke samme lagrede rapport; Slack-lenken skal peke til riktig uke.
+
+Arkivet publiserer også når `PUST_WEEKLY_RECAP_ENABLED=false`. Den innstillingen
+styrer bare Slack-sending. Sett `PUST_ARCHIVE_ENABLED=false` og fjern proxy-ruten
+for å deaktivere nettstedet. Behold arkivtabellene og datavolumet ved rollback.
+
+Første versjon er offentlig uten innlogging. Indekseringsinstruksjonene er
+ikke tilgangskontroll. Ingen personidentifikatorer eller enkeltaktiviteter
+inngår i rapportsnapshotene. Webserveren tilbyr ingen rådata-API eller filserver.
+Slack-innlogging er planlagt som en egen leveranse.

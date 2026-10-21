@@ -126,3 +126,24 @@ Bruk denne sjekklisten i `#pust` før en ny versjon regnes som klar.
 - Stopp med `docker compose down` uten `-v`.
 - Start på nytt og bekreft at aktiviteter, Sparks og prestasjoner fortsatt finnes.
 - Bekreft at `.env` ikke vises i `git status`.
+
+
+## Ukearkiv på nett
+
+- Aktiver `PUST_ARCHIVE_ENABLED` og kontroller logglinjen «Offentlig ukearkiv».
+- Åpne forsiden uten innlogging på mobil og datamaskin. Ingen navn, kommentarer,
+  individuelle aktivitetsrader eller opplastede bilder skal finnes der.
+- Første oppstart importerer eldre uker én gang og merker dem som rekonstruert.
+  Historiske mål og gruppestreak skal vises som ukjente.
+- Kontroller forrige/neste uke, permanente lenker, årsgrupper og klikkbare søyler.
+  Diagrammene skal slutte ved valgt uke og vise maksimalt åtte uker.
+- Åpne tabellen under diagrammene med tastatur. Tall og rapportgrunnlag skal
+  være lesbare uten farger eller peker. Ingen horisontal sidescrolling på mobil.
+- Ved ordinær søndagspublisering skal Slack-lenken åpne rapporten med nøyaktig
+  samme tall. En senere endring i aktivitetsloggen skal ikke endre rapporten.
+- Tom uke gir en rapport med nulltall og ingen Slack-post.
+- Ukjent uke gir 404 med lenke til arkivet. `robots.txt` og `X-Robots-Tag` ber
+  søkemotorer om ikke å indeksere nettstedet.
+- Automatiserte tester dekker feil i Slack, nedetid, forsinket arkivskriving,
+  omstart, uforanderlige rapporter og backup. Ikke endre produksjonsklokken.
+- Stopp og start boten igjen. Rapportene og merkingene skal være bevart.

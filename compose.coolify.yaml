@@ -11,11 +11,15 @@ services:
       BACKUP_DIRECTORY: /app/data/backups
       HEALTH_PORT: 3000
       PUST_WEEKLY_RECAP_ENABLED: ${PUST_WEEKLY_RECAP_ENABLED:-true}
+      PUST_ARCHIVE_ENABLED: ${PUST_ARCHIVE_ENABLED:-true}
+      PUST_PUBLIC_URL: ${PUST_PUBLIC_URL:-https://pust.smidigbommen.no}
       PUST_GROUP_MEMBER_COUNT: ${PUST_GROUP_MEMBER_COUNT:-14}
       PUST_WEEKLY_PARTICIPANT_GOAL: ${PUST_WEEKLY_PARTICIPANT_GOAL:-4}
       PUST_WEEKLY_MINUTES_GOAL: ${PUST_WEEKLY_MINUTES_GOAL:-240}
     volumes:
       - pust_data:/app/data
+    expose:
+      - "3000"
     healthcheck:
       test:
         - CMD

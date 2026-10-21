@@ -2,6 +2,8 @@ import { nextWeeklyRecap } from "./domain/recap-schedule.js";
 import { groupStatusMessage } from "./slack/progress-messages.js";
 import { buildWeeklyStatus, type WeeklyStatusSettings } from "./slack/weekly-status.js";
 import type { ActivityRepository } from "./storage/activity-repository.js";
+import type { WeeklyArchive } from "./weekly-archive.js";
+import { reportPath } from "./domain/weekly-report.js";
 
 interface RecapDependencies extends WeeklyStatusSettings {
   repository: ActivityRepository;
@@ -9,6 +11,8 @@ interface RecapDependencies extends WeeklyStatusSettings {
   send: (channel: string, text: string) => Promise<string>;
   logger: { info(message: string): void; error(message: string): void };
   now?: () => Date;
+  archive?: WeeklyArchive;
+  archiveUrl?: string;
 }
 
 const MINUTE = 60_000;
@@ -36,13 +40,20 @@ export function startWeeklyRecap(dependencies: RecapDependencies): () => Promise
       return;
     }
 
-    const status = buildWeeklyStatus(repository, slot.range, dependencies);
+    const report = dependencies.archive?.capture(slot.range, now());
+    // Never present reconstructed/late data as an on-time Slack recap.
+    if (report && report.kind !== "scheduled") return;
+    const status = report?.goals
+      ? { range: report.range, progress: report.progress, ...report.goals }
+      : buildWeeklyStatus(repository, slot.range, dependencies);
     if (status.progress.participants === 0) {
       repository.claimWeeklyRecap(channelId, week, checkedAt, "skipped_empty");
       logger.info(`Ukessammendrag ${week}: ingen registrerte aktiviteter.`);
       return;
     }
-    const text = groupStatusMessage(status, "Ukens trening søndag kl. 22:00");
+    const archiveLink = report && dependencies.archiveUrl
+      ? `\n\n<${dependencies.archiveUrl}${reportPath(report.range.start)}|Se ukens rapport i Pust-arkivet>` : "";
+    const text = groupStatusMessage(status, "Ukens trening søndag kl. 22:00") + archiveLink;
     // Even a slow database read must not turn this into a catch-up post.
     if (now().getTime() >= deadline) {
       repository.claimWeeklyRecap(channelId, week, checkedAt, "skipped_late");
