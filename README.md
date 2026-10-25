@@ -141,6 +141,10 @@ i timer og minutter samt registrert distanse. Alle minutter teller mot
 ukesmålet, uten grense per person. Dette gjelder også beregning av gruppestreak
 for tidligere uker, men endrer ikke allerede publiserte øyeblikksbilder.
 
+Når nettarkivet er aktivert, avsluttes `/pust status` med en lenke til Pust-nettsiden.
+Lenken viser publiserte ukesrapporter; inneværende uke publiseres først søndag
+kl. 22:00. Søndagssammendraget lenker direkte til sin lagrede rapport.
+
 Pust poster ukens status i `#pust` søndag kl. 22:00 i `Europe/Oslo`, med tittelen
 «Ukens trening søndag kl. 22:00». Sammendraget bruker samme beregning som
 `/pust status`, uten kanalvarsling. Uker uten registrert aktivitet hoppes over i Slack, men lagres i nettarkivet.

@@ -29,6 +29,7 @@ registerSlackHandlers(app, {
   groupMemberCount: config.groupMemberCount,
   weeklyParticipantGoal: config.weeklyParticipantGoal,
   weeklyMinutesGoal: config.weeklyMinutesGoal,
+  ...(archive ? { archiveUrl: config.publicUrl } : {}),
 });
 
 const stopWeeklyArchive = archive ? startWeeklyArchive(archive, app.logger) : () => {};

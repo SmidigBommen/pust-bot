@@ -36,6 +36,7 @@ interface HandlerDependencies {
   groupMemberCount: number;
   weeklyParticipantGoal: number;
   weeklyMinutesGoal: number;
+  archiveUrl?: string;
 }
 
 export function registerSlackHandlers(app: App, dependencies: HandlerDependencies): void {
@@ -58,9 +59,11 @@ export function registerSlackHandlers(app: App, dependencies: HandlerDependencie
     }
 
     if (subcommand === "status") {
+      const archiveLink = dependencies.archiveUrl
+        ? `\n\n<${dependencies.archiveUrl}|Se tidligere ukesrapporter på Pust-nettsiden>` : "";
       await respond({
         response_type: "in_channel",
-        text: groupStatusMessage(buildWeeklyStatus(dependencies.repository, osloWeek(), dependencies)),
+        text: groupStatusMessage(buildWeeklyStatus(dependencies.repository, osloWeek(), dependencies)) + archiveLink,
       });
       return;
     }
