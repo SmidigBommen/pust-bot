@@ -78,7 +78,7 @@ services:
       DATABASE_PATH: /app/data/pust.sqlite
       PUST_GROUP_MEMBER_COUNT: ${PUST_GROUP_MEMBER_COUNT:-14}
       PUST_WEEKLY_PARTICIPANT_GOAL: ${PUST_WEEKLY_PARTICIPANT_GOAL:-7}
-      PUST_WEEKLY_MINUTES_GOAL: ${PUST_WEEKLY_MINUTES_GOAL:-240}
+      PUST_WEEKLY_MINUTES_GOAL: ${PUST_WEEKLY_MINUTES_GOAL:-1200}
     volumes:
       - pust_data:/app/data
     restart: unless-stopped
@@ -127,10 +127,14 @@ SLACK_APP_TOKEN=xapp-...
 SLACK_PUST_CHANNEL_ID=C...
 PUST_GROUP_MEMBER_COUNT=14
 PUST_WEEKLY_PARTICIPANT_GOAL=7
-PUST_WEEKLY_MINUTES_GOAL=240
+PUST_WEEKLY_MINUTES_GOAL=1200
 ```
 
 Den lokale `.env`-filen skal ikke lastes opp. Den er ignorert av Git.
+
+Ved overgangen til 20 timer som ukesmål må en eksisterende runtime-verdi på
+`PUST_WEEKLY_MINUTES_GOAL=240` endres til `1200` før deploy. En eksplisitt
+miljøverdi overstyrer standardverdien i både appen og Compose.
 
 ## Vedvarende lagring og backup
 

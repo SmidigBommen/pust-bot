@@ -158,12 +158,18 @@ Gruppen har to parallelle ukesmål:
 Begge målene må nås for å videreføre gruppens streak. Gjeldende ukesmål:
 
 - Deltakelse: 7 av 14 medlemmer.
-- Aktivitet: 240 minutter totalt.
+- Aktivitet: 1 200 minutter totalt, tilsvarende 20 timer sammen.
 - Alle registrerte minutter teller mot gruppens minuttmål, uten grense per person.
 - Alle minutter gir fortsatt personlige Sparks.
 
 Deltakelsesmålet ble økt fra 4 til 7 den 29. oktober 2026, basert på at
 deltakelsen har stabilisert seg rundt syv personer per uke.
+
+Minuttmålet ble justert fra 240 til 1 200 den 13. november 2026. De siste fire
+publiserte ukene, uke 42 til 45, hadde i snitt 1 460 minutter. Gruppen nådde
+minst 1 200 minutter i alle de siste åtte publiserte ukene. Dette er en
+engangsjustering av startmålet basert på [ukearkivet](https://pust.smidigbommen.no/arkiv).
+Målet bør vurderes på nytt etter fire uker.
 
 Status viser minutter per aktivitetstype og registrert distanse der den finnes,
 sortert etter flest minutter. Oppsummeringen viser antall aktiviteter, antall

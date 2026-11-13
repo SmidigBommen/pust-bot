@@ -155,9 +155,11 @@ også. Eksisterende aktiviteter beholdes.
 
 ## Automatisk ukessammendrag
 
-Ukens deltakelsesmål er 7 personer, med 240 minutter som felles minuttmål.
-`PUST_WEEKLY_PARTICIPANT_GOAL` kan overstyre deltakelsesmålet. Gjeldende mål
-brukes også ved beregning av live gruppestreak for tidligere uker; publiserte
+Ukens deltakelsesmål er 7 personer, med 1 200 minutter som felles minuttmål.
+Det tilsvarer 20 timer sammen. `PUST_WEEKLY_PARTICIPANT_GOAL` og
+`PUST_WEEKLY_MINUTES_GOAL` kan overstyre målene. Hvis minuttmålet allerede er
+satt til 240 i miljøet, må denne verdien endres til 1200 ved deploy.
+Gjeldende mål brukes også ved beregning av live gruppestreak for tidligere uker; publiserte
 arkivrapporter beholder målene og tallene som ble lagret ved publisering.
 
 `/pust status` og søndagssammendraget viser minutter per aktivitetstype, med

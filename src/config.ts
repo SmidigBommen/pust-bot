@@ -26,7 +26,7 @@ export function loadConfig(): Config {
     databasePath: process.env.DATABASE_PATH ?? "./data/pust.sqlite",
     groupMemberCount: numberSetting("PUST_GROUP_MEMBER_COUNT", 14),
     weeklyParticipantGoal: numberSetting("PUST_WEEKLY_PARTICIPANT_GOAL", 7),
-    weeklyMinutesGoal: numberSetting("PUST_WEEKLY_MINUTES_GOAL", 240),
+    weeklyMinutesGoal: numberSetting("PUST_WEEKLY_MINUTES_GOAL", 1200),
     healthPort: numberSetting("HEALTH_PORT", 3000),
     weeklyRecapEnabled: booleanSetting("PUST_WEEKLY_RECAP_ENABLED", false),
     archiveEnabled: booleanSetting("PUST_ARCHIVE_ENABLED", false),
