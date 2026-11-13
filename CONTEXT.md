@@ -18,3 +18,7 @@ samme person.
 Flest registrerte minutter i én aktivitet, innen samme aktivitetstype og for
 samme person.
 _Avoid_: Beste tid
+
+**Rekordbonus**:
+Ti ekstra Sparks til deltakeren per personlig rekord slått i en nyregistrert
+aktivitet. En aktivitet som slår både distanse og varighet, gir tjue ekstra Sparks.

@@ -4,6 +4,8 @@ import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import type { Activity, ActivityInput, ActivityType } from "../domain/activity.js";
 import type { AchievementKey } from "../domain/achievements.js";
+import { newRecordBonus, retainedRecordBonus } from "../domain/record-bonus.js";
+import { osloDate } from "../domain/week.js";
 
 interface ActivityRow {
   id: string;
@@ -17,6 +19,7 @@ interface ActivityRow {
   created_at: string;
   slack_message_ts: string | null;
   slack_image_file_id: string | null;
+  record_bonus: string | null;
 }
 
 export class ActivityRepository {
@@ -75,20 +78,32 @@ export class ActivityRepository {
     if (!columns.some((column) => column.name === "slack_image_file_id")) {
       this.database.exec("ALTER TABLE activities ADD COLUMN slack_image_file_id TEXT;");
     }
+    if (!columns.some((column) => column.name === "record_bonus")) {
+      // Existing activities stay NULL: deployment never awards historical bonuses.
+      this.database.exec("ALTER TABLE activities ADD COLUMN record_bonus TEXT;");
+    }
   }
 
   create(input: ActivityInput): Activity {
+    return this.transaction(() => this.createActivity(input));
+  }
+
+  private createActivity(input: ActivityInput): Activity {
     const activity: Activity = {
       ...input,
       id: randomUUID(),
       createdAt: new Date().toISOString(),
     };
+    const today = osloDate(new Date(activity.createdAt));
+    const bonus = newRecordBonus(activity, this.listThrough(today), today);
+    if (bonus) activity.recordBonus = bonus;
+    else delete activity.recordBonus;
 
     this.database.prepare(`
       INSERT INTO activities (
         id, participant_slack_id, registered_by_slack_id, activity_type,
-        minutes, distance_km, comment, activity_date, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        minutes, distance_km, comment, activity_date, created_at, record_bonus
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       activity.id,
       activity.participantSlackId,
@@ -99,6 +114,7 @@ export class ActivityRepository {
       activity.comment ?? null,
       activity.activityDate,
       activity.createdAt,
+      bonus ? JSON.stringify(bonus) : null,
     );
 
     return activity;
@@ -131,7 +147,7 @@ export class ActivityRepository {
 
   totalSparksForParticipant(participantSlackId: string): number {
     const row = this.database.prepare(`
-      SELECT COALESCE(SUM(minutes), 0) AS total
+      SELECT COALESCE(SUM(minutes + COALESCE(json_extract(record_bonus, '$.sparks'), 0)), 0) AS total
       FROM activities
       WHERE participant_slack_id = ?
     `).get(participantSlackId) as { total: number };
@@ -167,12 +183,17 @@ export class ActivityRepository {
   }
 
   updateForParticipant(id: string, slackId: string, input: ActivityInput): Activity | null {
+    return this.transaction(() => this.updateActivity(id, slackId, input));
+  }
+
+  private updateActivity(id: string, slackId: string, input: ActivityInput): Activity | null {
     const existing = this.findById(id);
     if (!existing || existing.participantSlackId !== slackId) return null;
+    const bonus = retainedRecordBonus(input, existing.recordBonus);
 
     this.database.prepare(`
       UPDATE activities SET
-        activity_type = ?, minutes = ?, distance_km = ?, comment = ?, activity_date = ?
+        activity_type = ?, minutes = ?, distance_km = ?, comment = ?, activity_date = ?, record_bonus = ?
       WHERE id = ? AND participant_slack_id = ?
     `).run(
       input.type,
@@ -180,10 +201,23 @@ export class ActivityRepository {
       input.distanceKm ?? null,
       input.comment ?? null,
       input.activityDate,
+      bonus ? JSON.stringify(bonus) : null,
       id,
       slackId,
     );
     return this.findById(id);
+  }
+
+  private transaction<T>(operation: () => T): T {
+    this.database.exec("BEGIN IMMEDIATE");
+    try {
+      const result = operation();
+      this.database.exec("COMMIT");
+      return result;
+    } catch (error) {
+      this.database.exec("ROLLBACK");
+      throw error;
+    }
   }
 
   deleteControlledBy(id: string, slackId: string): Activity | null {
@@ -245,5 +279,6 @@ function mapRow(row: ActivityRow): Activity {
     createdAt: row.created_at,
     ...(row.slack_message_ts === null ? {} : { slackMessageTs: row.slack_message_ts }),
     ...(row.slack_image_file_id === null ? {} : { slackImageFileId: row.slack_image_file_id }),
+    ...(row.record_bonus === null ? {} : { recordBonus: JSON.parse(row.record_bonus) as NonNullable<Activity["recordBonus"]> }),
   };
 }

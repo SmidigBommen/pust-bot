@@ -98,11 +98,13 @@ describe("personal progress and records", () => {
     expect(post.text).toContain("Lengste distanse: 8,25 km. Tidligere rekord: 6,5 km.");
     expect(post.text).toContain("Lengste økt: 40 minutter. Tidligere rekord: 30 minutter.");
     expect(post.text).toContain("+40 Sparks");
+    expect(post.text).toContain("+20 Sparks i rekordbonus");
     if (withImage) expect(post.blocks[0].text.text).toBe(post.text);
     const status = await personalCommand();
     expect(status).toContain("*Løping* · Lengste økt: 40 minutter · Lengste distanse: 8,25 km");
     expect(client.chat.postEphemeral).toHaveBeenCalledExactlyOnceWith({ channel: "CPUST", user: "U1", text: status });
-    expect(repository.totalSparksForParticipant("U1")).toBe(70);
+    expect(repository.totalSparksForParticipant("U1")).toBe(90);
+    expect(status).toContain("Dine Sparks: 90");
   });
 
   it("assigns assisted records to the participant, using that person's history", async () => {
@@ -115,6 +117,19 @@ describe("personal progress and records", () => {
     expect(await personalCommand("U1")).toContain("Lengste økt: 100 minutter");
     expect(client.chat.postEphemeral).not.toHaveBeenCalled();
     expect(client.chat.postMessage).toHaveBeenCalledTimes(2);
+    expect(client.chat.postMessage).toHaveBeenLastCalledWith({
+      channel: "U2",
+      text: "<@U1> registrerte 40 minutter aktivitet for deg i #pust. Aktiviteten ga deg 50 Sparks. Inkludert 10 Sparks i rekordbonus.",
+    });
+  });
+
+  it("includes the bonus when crossing a level threshold", async () => {
+    repository.create({ participantSlackId: "U1", registeredBySlackId: "U1", type: "run", minutes: 30, activityDate: "2026-09-24" });
+    await submit(LOG_ACTIVITY_CALLBACK_ID, { ...values, minutes: { value: { value: "60" } } });
+    const status = await personalCommand();
+    expect(status).toContain("Dine Sparks: 100");
+    expect(status).toContain("Nivå 2: *Medvind*");
+    expect(client.chat.postEphemeral.mock.calls[0]![0].text).toBe(status);
   });
 
   it("recalculates records after corrections, type changes and deletions without new celebrations", async () => {
@@ -125,6 +140,8 @@ describe("personal progress and records", () => {
     await submit(EDIT_ACTIVITY_CALLBACK_ID, { ...values, minutes: { value: { value: "20" } } }, activity.id);
     expect(await personalCommand()).toContain("*Løping* · Lengste økt: 30 minutter · Lengste distanse: 6,5 km");
     expect(client.chat.update.mock.calls[0]![0].text).not.toContain("Ny personlig rekord");
+    expect(client.chat.update.mock.calls[0]![0].text).not.toContain("rekordbonus");
+    expect(repository.totalSparksForParticipant("U1")).toBe(50);
     await submit(EDIT_ACTIVITY_CALLBACK_ID, { ...values, activity_type: { value: { selected_option: { value: "mobility" } } } }, activity.id);
     expect(await personalCommand()).toContain("*Yoga eller bevegelighet* · Lengste økt: 40 minutter");
     expect(await personalCommand()).toContain("*Løping* · Lengste økt: 30 minutter · Lengste distanse: 6,5 km");

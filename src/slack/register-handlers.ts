@@ -1,7 +1,7 @@
 import { registerTeamHandlers, teamOverview } from "./team-handlers.js";
 import type { TeamRepository } from "../storage/team-repository.js";
 import type { App } from "@slack/bolt";
-import { isActivityType, validateActivity, type ActivityInput } from "../domain/activity.js";
+import { isActivityType, totalActivitySparks, validateActivity, type ActivityInput } from "../domain/activity.js";
 import type { ActivityRepository } from "../storage/activity-repository.js";
 import { osloDate, osloWeek } from "../domain/week.js";
 import { brokenPersonalRecords } from "../domain/personal-records.js";
@@ -186,7 +186,7 @@ export function registerSlackHandlers(app: App, dependencies: HandlerDependencie
       if (activity.participantSlackId !== activity.registeredBySlackId) {
         await client.chat.postMessage({
           channel: activity.participantSlackId,
-          text: `<@${activity.registeredBySlackId}> registrerte ${activity.minutes} minutter aktivitet for deg i #pust. Aktiviteten ga deg ${activity.minutes} Sparks.`,
+          text: `<@${activity.registeredBySlackId}> registrerte ${activity.minutes} minutter aktivitet for deg i #pust. Aktiviteten ga deg ${totalActivitySparks(activity)} Sparks.${activity.recordBonus ? ` Inkludert ${activity.recordBonus.sparks} Sparks i rekordbonus.` : ""}`,
         });
       }
     } catch (error) {

@@ -90,7 +90,8 @@ Bruk denne sjekklisten i `#pust` før en ny versjon regnes som klar.
   distanse gjør det samme, også når typen allerede har økter uten distanse.
 - Registrer en lengre økt og distanse i samme type. Begge rekordene feires med
   nye og tidligere verdier i aktivitetsinnlegget. Gjenta med bilde og kontroller
-  at feiringen vises over bildet. Ingen ekstra Sparks gis.
+  at feiringen vises over bildet. Rekordbonusen vises separat: 10 Sparks for én
+  rekord, 20 for begge. Kontroller samme tillegg i `/pust meg` og nivået.
 - Registrer lik eller lavere verdi. Ingen ny rekordfeiring skal vises.
 - Kontroller at sykkelrekorder ikke påvirker løping, og at en kollegas rekord
   ikke påvirker din. Ved registrering for andre tilhører rekorden deltakeren.
@@ -105,6 +106,21 @@ Bruk denne sjekklisten i `#pust` før en ny versjon regnes som klar.
   historikken frem til i dag, også økter med senere aktivitetsdato.
 - Automatiserte tester dekker at fremtidsdaterte aktiviteter inngår fra sin
   dato i Oslo-tid, uten forsinket feiring. Ikke endre produksjonsklokken.
+- Gamle registreringer skal beholde Sparks uten rekordbonus etter oppgradering,
+  også når de redigeres til en høyere verdi. Første verdier og like verdier skal
+  heller ikke gi bonus. Automatiserte tester dekker migrering og omstart.
+- En ny PR skal beholde bonusen når en senere PR slås. Rediger den første
+  PR-en uten å gå under sammenligningsverdien, og kontroller at bonusen består.
+- Korriger begge rekordverdiene ned til eller under de opprinnelig slåtte
+  verdiene. Bonusen skal forsvinne fra innlegget og personlig Sparks-total.
+  Rediger opp igjen: bonusen skal ikke gjenopprettes. Bytte av aktivitetstype
+  eller flytting til en dato etter bonusdagen fjerner også bonusen.
+- Korriger bare én av to slåtte rekorder. Bonusen skal gå fra 20 til 10 Sparks.
+  Rediger verdien opp igjen: de fjernede 10 Sparks skal ikke gjenopprettes.
+- Slett en aktivitet med bonus og kontroller at både minutter og bonus trekkes
+  fra personlige Sparks. Gruppe- og lagmål skal bare miste aktivitetsminuttene.
+- Registrer en PR for en kollega. Den private beskjeden skal inkludere bonusen
+  i totalen og forklare tillegget. Hjelperen skal ikke få bonusen.
 
 ## Pustelag
 

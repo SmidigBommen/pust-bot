@@ -1,3 +1,5 @@
+import type { RecordBonus } from "./record-bonus.js";
+
 export const MINIMUM_ACTIVITY_MINUTES = 10;
 
 export const activityTypes = [
@@ -43,6 +45,7 @@ export interface Activity extends ActivityInput {
   createdAt: string;
   slackMessageTs?: string;
   slackImageFileId?: string;
+  recordBonus?: RecordBonus;
 }
 
 export function isQualifyingActivity(minutes: number): boolean {
@@ -51,6 +54,10 @@ export function isQualifyingActivity(minutes: number): boolean {
 
 export function sparksForActivity(minutes: number): number {
   return isQualifyingActivity(minutes) ? minutes : 0;
+}
+
+export function totalActivitySparks(activity: Activity): number {
+  return sparksForActivity(activity.minutes) + (activity.recordBonus?.sparks ?? 0);
 }
 
 export function validateActivity(input: ActivityInput): string[] {

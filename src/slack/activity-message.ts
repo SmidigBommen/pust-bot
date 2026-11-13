@@ -16,6 +16,7 @@ export function activityMessage(activity: Activity): string {
   const details = [`${activity.minutes} minutter`];
   if (activity.distanceKm !== undefined) details.push(`${formatDistance(activity.distanceKm)} km`);
   details.push(`⚡ *+${sparksForActivity(activity.minutes)} Sparks*`);
+  if (activity.recordBonus) details.push(`🏅 *+${activity.recordBonus.sparks} Sparks i rekordbonus*`);
   if (activity.comment) details.push(`«${activity.comment.replace(/\s*\r?\n\s*/g, " ")}»`);
   if (assisted) details.push(`Registrert med hjelp fra <@${activity.registeredBySlackId}>`);
 

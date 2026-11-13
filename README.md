@@ -56,8 +56,19 @@ aktiviteter teller med. Distanse er fortsatt valgfritt.
 
 Når en ny registrering slår en rekord, feires den med ny og tidligere verdi i
 aktivitetens innlegg i `#pust`. Én aktivitet kan slå begge rekordene. Første
-verdi etablerer utgangspunktet, og lik verdi gir ingen ny feiring. Rekorder gir
-ingen ekstra Sparks og tilhører deltakeren, også når en kollega registrerer.
+verdi etablerer utgangspunktet, og lik verdi gir ingen ny feiring.
+
+Nye registreringer gir 10 Sparks i rekordbonus per rekord som slås.
+Slår én aktivitet både distanse og varighet, gir den 20 ekstra Sparks. Innlegget viser
+Sparks fra minutter og rekordbonus hver for seg. Bonusen teller mot personlig
+nivå og tilhører deltakeren, også når en kollega registrerer. Gruppe- og lagmål
+teller fortsatt bare aktivitetsminuttene.
+
+Bonus gjelder bare nye registreringer etter at denne versjonen tas i bruk.
+Gamle aktiviteter gir sammenligningsgrunnlag, men får aldri bonus i etterkant,
+heller ikke ved redigering. Nye etterregistreringer kan få bonus hvis de slår
+den allerede registrerte historikken. Fremtidsdaterte registreringer får ingen
+bonus ved registrering eller senere.
 
 Etterregistrering sammenlignes med hele den registrerte historikken frem til
 i dag. Fremtidsdaterte aktiviteter teller først på aktivitetsdatoen i Oslo-tid,
@@ -65,12 +76,22 @@ uten en forsinket feiring. Redigering og sletting oppdaterer gjeldende rekorder
 uten nye feiringer. Et redigert innlegg mister den gamle rekordfeiringen;
 andre tidligere innlegg beholdes som feiringer fra registreringen.
 
-Rekorder beregnes fra aktivitetsloggen. Ingen nye databasetabeller, Slack-scopes
-eller miljøvariabler kreves.
+En opptjent bonus beholdes selv om en senere aktivitet slår rekorden. Ved
+redigering beholdes 10 Sparks for hver opprinnelig slått rekord som fortsatt
+slås. Aktiviteten må ha samme type og en dato senest på dagen bonusen ble gitt;
+ellers fjernes hele bonusen. Redigering kan aldri gi en ny bonus eller gjenopprette
+en fjernet bonus. Sletting fjerner også aktivitetens bonus.
+
+Ta SQLite-backup før deploy. Oppstart legger til den valgfrie kolonnen
+`activities.record_bonus`, med bonusbeløp og sammenligningsgrunnlag for nye
+bonuser. Eksisterende rader får tom verdi. Ingen nye Slack-scopes eller
+miljøvariabler kreves. Behold kolonnen ved rollback; eldre versjoner viser bare
+minuttbaserte Sparks og vedlikeholder ikke bonus ved redigering.
 
 ## Nivåer og prestasjoner
 
-Ett registrert aktivitetsminutt gir én Spark. Nivåene bruker samlet antall Sparks:
+Ett registrert aktivitetsminutt gir én Spark. Rekordbonus kommer i tillegg.
+Nivåene bruker samlet antall Sparks:
 
 | Nivå | Navn | Sparks |
 | ---: | --- | ---: |

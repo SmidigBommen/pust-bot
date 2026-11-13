@@ -12,7 +12,7 @@ export function helpMessage(): string {
     "• `/pust hjelp` — vis denne hjelpen",
     "",
     "Når du logger for deg selv, får du også oppdatert personlig fremdrift privat i #pust.",
-    "Personlige rekorder feirer din lengste økt og distanse per aktivitetstype. De gir ingen ekstra Sparks.",
+    "En ny registrering gir 10 Sparks per personlig rekord: lengste økt eller distanse. Slår du begge, får du 20 ekstra Sparks. Tidligere registreringer får ingen bonus i etterkant.",
     "",
     "Aktivitet fra 10 minutter gir én Spark per minutt. Det finnes ingen individuell toppliste—hver aktivitet styrker både deg og fellesskapet.",
   ].join("\n");

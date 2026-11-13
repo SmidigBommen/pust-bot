@@ -65,7 +65,8 @@ bidrar ikke til gruppemål.
 - Dato, med i dag som standard
 
 Alle registrerte detaljer publiseres i `#pust`. Distanse skal særlig brukes for
-gåtur/fottur, løping og sykling, men skal ikke gi ekstra Sparks.
+gåtur/fottur, løping og sykling. Kilometer gir ikke Sparks i seg selv, men en
+ny distanserekord kan utløse rekordbonus.
 
 ### 4.3 Registrering for andre
 
@@ -83,6 +84,8 @@ Alle medlemmer i `#pust` kan registrere aktivitet på vegne av et annet medlem.
 ### 5.1 Sparks
 
 - Ett kvalifiserende aktivitetsminutt gir én Spark.
+- En ny registrering gir 10 ekstra Sparks per personlig rekord som slås,
+  totalt 20 hvis begge slås. Tidligere registreringer får ingen bonus i etterkant.
 - Sparks tilhører personen som utførte aktiviteten.
 - Det er ingen øvre grense for personlige Sparks.
 - Kilometer, intensitet og aktivitetstype gir ikke multiplikator i MVP.
@@ -124,7 +127,7 @@ mulige rekorder per aktivitetstype:
 Rekordene heter «Personlige rekorder i Pust», siden grunnlaget er aktivitetene
 personen har registrert her. En løpetur sammenlignes bare med personens andre
 løpeturer. Lengste økt gjelder alle aktivitetstyper, og distanserekord finnes
-bare når distanse er registrert. Rekordene gir ingen ekstra Sparks.
+bare når distanse er registrert.
 
 Registrering skjer som før med `/pust logg`, uten nye felter. Når en aktivitet
 slår en rekord, får det eksisterende kanalinnlegget en kort feiring med ny og
@@ -147,6 +150,20 @@ i Oslo-tid, uten en forsinket feiring. Redigering og sletting sender ingen nye
 rekordfeiringer. Ved redigering erstattes aktivitetens innlegg uten den gamle
 feiringen. Andre tidligere innlegg beholdes som feiringer fra registreringen,
 mens `/pust meg` alltid viser gjeldende rekorder.
+
+En ny registrering gir deltakeren 10 Sparks per rekord som slås, totalt 20
+når både distanse og varighet slås. Dette gjelder fra versjonen med rekordbonus tas i bruk. Første
+verdier, like verdier og gamle registreringer gir ingen bonus. Gamle aktiviteter
+inngår fortsatt i sammenligningsgrunnlaget. Nye etterregistreringer kan få
+bonus; fremtidsdaterte registreringer får ingen bonus ved registrering eller senere.
+Bonusen vises separat fra minuttbaserte Sparks og teller mot personlig nivå,
+men ikke gruppe- eller lagmål. Nivågrensene er uendret.
+
+En senere PR fjerner ikke en tidligere opptjent bonus. Ved redigering beholdes
+10 Sparks per opprinnelig slått rekord som fortsatt slås. Aktivitetstypen må
+være den samme og datoen ikke etter dagen bonusen ble gitt; ellers fjernes hele
+bonusen. Redigering kan aldri opprette eller gjenopprette
+bonus, heller ikke på gamle registreringer. Sletting fjerner aktivitetens bonus.
 
 ## 6. Gruppens Pust
 
