@@ -1,5 +1,6 @@
 import { isActivityType, type Activity, type ActivityType } from "./activity.js";
 import { calculateWeeklyProgress } from "./weekly-progress.js";
+export { osloDate } from "./week.js";
 
 export type TeamGoal = { kind: "participation"; target: number } | { kind: "minutes"; target: number };
 
@@ -20,10 +21,6 @@ export interface TeamChallenge extends TeamInput {
 
 export class TeamRuleError extends Error {
   constructor(message: string, readonly field = "name") { super(message); }
-}
-
-export function osloDate(now = new Date()): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Oslo", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
 }
 
 function validDate(value: string): boolean {

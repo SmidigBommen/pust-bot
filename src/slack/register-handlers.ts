@@ -3,7 +3,9 @@ import type { TeamRepository } from "../storage/team-repository.js";
 import type { App } from "@slack/bolt";
 import { isActivityType, validateActivity, type ActivityInput } from "../domain/activity.js";
 import type { ActivityRepository } from "../storage/activity-repository.js";
-import { osloWeek } from "../domain/week.js";
+import { osloDate, osloWeek } from "../domain/week.js";
+import { brokenPersonalRecords } from "../domain/personal-records.js";
+import { personalRecordCelebration } from "./personal-record-messages.js";
 import { achievements, earnedAchievements } from "../domain/achievements.js";
 import { activityMessage } from "./activity-message.js";
 import { sendActivityPost, validateActivityImage } from "./activity-post.js";
@@ -19,15 +21,6 @@ import {
   selectEditActivityModal,
   SELECT_EDIT_ACTIVITY_CALLBACK_ID,
 } from "./edit-activity-modal.js";
-
-function osloDate(): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Europe/Oslo",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
-}
 
 interface HandlerDependencies {
   teams: TeamRepository;
@@ -156,6 +149,7 @@ export function registerSlackHandlers(app: App, dependencies: HandlerDependencie
     const activity = dependencies.repository.create(input);
     const range = osloWeek();
     const allActivities = dependencies.repository.listThrough(range.end);
+    const recordText = personalRecordCelebration(activity.type, brokenPersonalRecords(activity, allActivities, osloDate()));
     const achievementOwners = new Set([
       activity.participantSlackId,
       activity.registeredBySlackId,
@@ -175,7 +169,7 @@ export function registerSlackHandlers(app: App, dependencies: HandlerDependencie
     try {
       const result = await sendActivityPost(
         (post) => client.chat.postMessage({ channel: dependencies.pustChannelId, ...post }),
-        [activityMessage(activity), awardText].filter(Boolean).join("\n"),
+        [activityMessage(activity), awardText, recordText].filter(Boolean).join("\n"),
         images[0]?.id,
       );
       if (result.response.ts) {

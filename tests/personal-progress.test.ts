@@ -16,7 +16,7 @@ const values = {
   activity_date: { value: { selected_date: "2026-10-01" } },
 };
 
-describe("private progress after self-logging", () => {
+describe("personal progress and records", () => {
   let repository: ActivityRepository;
   let teams: TeamRepository;
   let handlers: Map<string, ViewHandler>;
@@ -49,7 +49,7 @@ describe("private progress after self-logging", () => {
       weeklyParticipantGoal: 4, weeklyMinutesGoal: 240,
     });
   });
-  afterEach(() => { teams.close(); vi.useRealTimers(); vi.clearAllMocks(); });
+  afterEach(() => { repository.close(); teams.close(); vi.useRealTimers(); vi.clearAllMocks(); });
 
   async function submit(callback = LOG_ACTIVITY_CALLBACK_ID, stateValues: object = values, id = "", user = "U1") {
     const ack = vi.fn();
@@ -66,6 +66,91 @@ describe("private progress after self-logging", () => {
     expect(respond).toHaveBeenCalledWith(expect.objectContaining({ response_type: "ephemeral" }));
     return respond.mock.calls[0]![0].text as string;
   }
+
+  it("shows existing history privately without publishing retrospective celebrations", async () => {
+    expect(await personalCommand()).not.toContain("Personlige rekorder");
+    repository.create({ participantSlackId: "U1", registeredBySlackId: "U1", type: "run", minutes: 60, distanceKm: 8.25, activityDate: "2025-01-01" });
+    const text = await personalCommand();
+    expect(text).toContain("*Personlige rekorder i Pust*");
+    expect(text).toContain("*Løping* · Lengste økt: 60 minutter · Lengste distanse: 8,25 km");
+    expect(client.chat.postMessage).not.toHaveBeenCalled();
+  });
+
+  it("shows a first baseline and ties without celebrating them", async () => {
+    await submit();
+    expect(client.chat.postMessage.mock.calls[0]![0].text).not.toContain("Ny personlig rekord");
+    expect(await personalCommand()).toContain("*Løping* · Lengste økt: 40 minutter");
+    expect(await personalCommand()).not.toContain("Lengste distanse");
+    await submit();
+    expect(client.chat.postMessage.mock.calls[1]![0].text).not.toContain("Ny personlig rekord");
+  });
+
+  it.each([false, true])("celebrates both records in the activity post and updates private status, image=%s", async withImage => {
+    repository.create({ participantSlackId: "U1", registeredBySlackId: "U1", type: "run", minutes: 30, distanceKm: 6.5, activityDate: "2026-09-24" });
+    const image = { id: "FIMAGE", mimetype: "image/jpeg", filetype: "jpg" };
+    await submit(LOG_ACTIVITY_CALLBACK_ID, {
+      ...values, distance: { value: { value: "8.25" } },
+      ...(withImage ? { image: { value: { files: [image] } } } : {}),
+    });
+    expect(client.chat.postMessage).toHaveBeenCalledOnce();
+    const post = client.chat.postMessage.mock.calls[0]![0];
+    expect(post.text).toContain("Ny personlig rekord i løping!");
+    expect(post.text).toContain("Lengste distanse: 8,25 km. Tidligere rekord: 6,5 km.");
+    expect(post.text).toContain("Lengste økt: 40 minutter. Tidligere rekord: 30 minutter.");
+    expect(post.text).toContain("+40 Sparks");
+    if (withImage) expect(post.blocks[0].text.text).toBe(post.text);
+    const status = await personalCommand();
+    expect(status).toContain("*Løping* · Lengste økt: 40 minutter · Lengste distanse: 8,25 km");
+    expect(client.chat.postEphemeral).toHaveBeenCalledExactlyOnceWith({ channel: "CPUST", user: "U1", text: status });
+    expect(repository.totalSparksForParticipant("U1")).toBe(70);
+  });
+
+  it("assigns assisted records to the participant, using that person's history", async () => {
+    repository.create({ participantSlackId: "U2", registeredBySlackId: "U2", type: "run", minutes: 30, activityDate: "2026-09-24" });
+    repository.create({ participantSlackId: "U1", registeredBySlackId: "U1", type: "run", minutes: 100, activityDate: "2026-09-24" });
+    await submit(LOG_ACTIVITY_CALLBACK_ID, { ...values, participant: { value: { selected_user: "U2" } } });
+    expect(client.chat.postMessage.mock.calls[0]![0].text).toContain("Ny personlig rekord i løping!");
+    expect(client.chat.postMessage.mock.calls[0]![0].text).toContain("Registrert med hjelp fra <@U1>");
+    expect(await personalCommand("U2")).toContain("Lengste økt: 40 minutter");
+    expect(await personalCommand("U1")).toContain("Lengste økt: 100 minutter");
+    expect(client.chat.postEphemeral).not.toHaveBeenCalled();
+    expect(client.chat.postMessage).toHaveBeenCalledTimes(2);
+  });
+
+  it("recalculates records after corrections, type changes and deletions without new celebrations", async () => {
+    repository.create({ participantSlackId: "U1", registeredBySlackId: "U1", type: "run", minutes: 30, distanceKm: 6.5, activityDate: "2026-09-24" });
+    await submit(LOG_ACTIVITY_CALLBACK_ID, { ...values, distance: { value: { value: "8" } } });
+    const activity = repository.listRecentForParticipant("U1")[0]!;
+    client.chat.postEphemeral.mockClear();
+    await submit(EDIT_ACTIVITY_CALLBACK_ID, { ...values, minutes: { value: { value: "20" } } }, activity.id);
+    expect(await personalCommand()).toContain("*Løping* · Lengste økt: 30 minutter · Lengste distanse: 6,5 km");
+    expect(client.chat.update.mock.calls[0]![0].text).not.toContain("Ny personlig rekord");
+    await submit(EDIT_ACTIVITY_CALLBACK_ID, { ...values, activity_type: { value: { selected_option: { value: "mobility" } } } }, activity.id);
+    expect(await personalCommand()).toContain("*Yoga eller bevegelighet* · Lengste økt: 40 minutter");
+    expect(await personalCommand()).toContain("*Løping* · Lengste økt: 30 minutter · Lengste distanse: 6,5 km");
+    await submit(DELETE_ACTIVITY_CALLBACK_ID, { activity: { value: { selected_option: { value: activity.id } } } });
+    expect(await personalCommand()).not.toContain("Yoga eller bevegelighet");
+    const remaining = repository.listRecentForParticipant("U1")[0]!;
+    await submit(DELETE_ACTIVITY_CALLBACK_ID, { activity: { value: { selected_option: { value: remaining.id } } } });
+    expect(await personalCommand()).not.toContain("Personlige rekorder");
+    expect(client.chat.postEphemeral).not.toHaveBeenCalled();
+    expect(client.chat.postMessage).toHaveBeenCalledTimes(2);
+    expect(client.chat.postMessage.mock.calls[1]![0].text).toContain("slettet en aktivitet");
+  });
+
+  it("includes future entries only at Oslo midnight, without a delayed celebration", async () => {
+    await submit();
+    await submit(LOG_ACTIVITY_CALLBACK_ID, {
+      ...values, minutes: { value: { value: "60" } },
+      activity_date: { value: { selected_date: "2026-10-02" } },
+    });
+    expect(client.chat.postMessage.mock.calls[1]![0].text).not.toContain("Ny personlig rekord");
+    vi.setSystemTime(new Date("2026-10-01T21:59:59Z"));
+    expect(await personalCommand()).toContain("Lengste økt: 40 minutter");
+    vi.setSystemTime(new Date("2026-10-01T22:00:00Z"));
+    expect(await personalCommand()).toContain("Lengste økt: 60 minutter");
+    expect(client.chat.postMessage).toHaveBeenCalledTimes(2);
+  });
 
   it.each([false, true])("sends the updated /pust meg result privately, with image=%s", async withImage => {
     repository.create({ participantSlackId: "U1", registeredBySlackId: "U1", type: "strength", minutes: 10, activityDate: "2026-09-17" });

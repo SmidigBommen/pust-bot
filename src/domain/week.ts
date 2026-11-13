@@ -3,6 +3,10 @@ export interface DateRange {
   end: string;
 }
 
+export function osloDate(now = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Oslo", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+}
+
 export function osloWeek(date = new Date()): DateRange {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Oslo",

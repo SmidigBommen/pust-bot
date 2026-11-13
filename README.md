@@ -39,13 +39,34 @@ slik at det ikke kreves en offentlig HTTP-adresse.
 
 Når du registrerer en aktivitet for deg selv, viser Pust automatisk samme
 personlige fremdrift som `/pust meg`, inkludert den nye aktiviteten: Sparks,
-nivå, veien til neste nivå, personlig streak og prestasjoner. Meldingen vises
+nivå, veien til neste nivå, personlig streak, prestasjoner og personlige rekorder. Meldingen vises
 privat i `#pust`, bare for deg, og er midlertidig på samme måte som kommandosvaret.
 
 Registrering for andre sender ikke denne fremdriftsmeldingen. Den eksisterende
 beskjeden til deltakeren om at noen registrerte for dem beholdes. Redigering og
 sletting utløser heller ikke en ny fremdriftsmelding. Hvis sendingen feiler,
 beholdes aktiviteten og feilen logges. Ingen nye Slack-scopes kreves.
+
+## Personlige rekorder i Pust
+
+Pust finner automatisk din lengste økt i minutter og lengste registrerte
+distanse i kilometer for hver aktivitetstype. Rekordene vises i `/pust meg`
+og i den private fremdriftsmeldingen etter egen registrering. Eksisterende
+aktiviteter teller med. Distanse er fortsatt valgfritt.
+
+Når en ny registrering slår en rekord, feires den med ny og tidligere verdi i
+aktivitetens innlegg i `#pust`. Én aktivitet kan slå begge rekordene. Første
+verdi etablerer utgangspunktet, og lik verdi gir ingen ny feiring. Rekorder gir
+ingen ekstra Sparks og tilhører deltakeren, også når en kollega registrerer.
+
+Etterregistrering sammenlignes med hele den registrerte historikken frem til
+i dag. Fremtidsdaterte aktiviteter teller først på aktivitetsdatoen i Oslo-tid,
+uten en forsinket feiring. Redigering og sletting oppdaterer gjeldende rekorder
+uten nye feiringer. Et redigert innlegg mister den gamle rekordfeiringen;
+andre tidligere innlegg beholdes som feiringer fra registreringen.
+
+Rekorder beregnes fra aktivitetsloggen. Ingen nye databasetabeller, Slack-scopes
+eller miljøvariabler kreves.
 
 ## Nivåer og prestasjoner
 

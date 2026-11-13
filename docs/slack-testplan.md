@@ -14,7 +14,7 @@ Bruk denne sjekklisten i `#pust` før en ny versjon regnes som klar.
 - `/pust hjelp` viser alle tilgjengelige kommandoer privat.
 - En ukjent kommando viser hjelp uten å poste i kanalen.
 - `/pust status` poster ukens deltakere, minutter, kilometer og gruppestreak.
-- `/pust meg` viser personlige Sparks, nivå, streak og prestasjoner privat.
+- `/pust meg` viser personlige Sparks, nivå, streak, prestasjoner og rekorder privat.
 
 ## Registrering
 
@@ -81,6 +81,30 @@ Bruk denne sjekklisten i `#pust` før en ny versjon regnes som klar.
 - Nivå 8 er `Tindevandrer` ved 9 000 Sparks, og nivå 9 er `Gnistlegende` ved
   15 000. Kontroller neste nivå og gjenstående Sparks i `/pust meg` og etter
   egenregistrering. Automatiserte tester dekker selve nivågrensene.
+
+## Personlige rekorder
+
+- `/pust meg` viser lengste økt og registrerte distanse per aktivitetstype fra
+  eksisterende historikk. En person uten aktiviteter har ingen rekordliste.
+- Første økt i en type etablerer utgangspunktet uten rekordfeiring. Første
+  distanse gjør det samme, også når typen allerede har økter uten distanse.
+- Registrer en lengre økt og distanse i samme type. Begge rekordene feires med
+  nye og tidligere verdier i aktivitetsinnlegget. Gjenta med bilde og kontroller
+  at feiringen vises over bildet. Ingen ekstra Sparks gis.
+- Registrer lik eller lavere verdi. Ingen ny rekordfeiring skal vises.
+- Kontroller at sykkelrekorder ikke påvirker løping, og at en kollegas rekord
+  ikke påvirker din. Ved registrering for andre tilhører rekorden deltakeren.
+- Sammenlign rekordene i den private meldingen etter egenregistrering med
+  `/pust meg`. De skal være like, også når bare minutter er registrert.
+- Rediger en rekord ned, fjern distansen eller bytt aktivitetstype. Kontroller
+  at `/pust meg` viser riktig gjenværende rekord og at det redigerte innlegget
+  ikke beholder gammel rekordfeiring. Ingen ny feiring sendes ved redigering.
+- Slett rekordaktiviteten. Forrige gjenværende rekord overtar. Slett siste økt
+  i en type og kontroller at typen forsvinner fra rekordlisten.
+- Etterregistrer en aktivitet og kontroller at den sammenlignes med hele
+  historikken frem til i dag, også økter med senere aktivitetsdato.
+- Automatiserte tester dekker at fremtidsdaterte aktiviteter inngår fra sin
+  dato i Oslo-tid, uten forsinket feiring. Ikke endre produksjonsklokken.
 
 ## Pustelag
 

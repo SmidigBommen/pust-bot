@@ -8,7 +8,7 @@ uten å rangere kolleger mot hverandre.
 
 Pust kombinerer tre former for progresjon:
 
-1. **Personlig progresjon:** Sparks, nivåer, prestasjoner og ukentlig streak.
+1. **Personlig progresjon:** Sparks, nivåer, prestasjoner, personlige rekorder og ukentlig streak.
 2. **Små fellesskap:** Frivillige Pustelag med samarbeidsbaserte mål.
 3. **Hele Gnist:** Adaptive mål for deltakelse og aktivitetsminutter i `#pust`.
 
@@ -111,6 +111,42 @@ Gnistlegende er høyeste nivå foreløpig. Sparks fortsetter å øke etter 15 00
 En personlig streak fortsetter når medlemmet registrerer minst én kvalifiserende
 aktivitet i løpet av uken. Streaken er ukentlig, ikke daglig. En avsluttet streak
 fjerner aldri Sparks, nivå eller prestasjoner.
+
+### 5.4 Personlige rekorder i Pust
+
+Personlige rekorder synliggjør fremgang i egen aktivitetshistorikk og skal
+oppmuntre til bevegelse uavhengig av tempo og intensitet. Hver person har to
+mulige rekorder per aktivitetstype:
+
+- Lengste distanse i én aktivitet, målt i registrerte kilometer.
+- Lengste økt, målt i registrerte minutter.
+
+Rekordene heter «Personlige rekorder i Pust», siden grunnlaget er aktivitetene
+personen har registrert her. En løpetur sammenlignes bare med personens andre
+løpeturer. Lengste økt gjelder alle aktivitetstyper, og distanserekord finnes
+bare når distanse er registrert. Rekordene gir ingen ekstra Sparks.
+
+Registrering skjer som før med `/pust logg`, uten nye felter. Når en aktivitet
+slår en rekord, får det eksisterende kanalinnlegget en kort feiring med ny og
+tidligere verdi. Én aktivitet kan slå begge rekordene. Eksempel:
+
+> Ny personlig rekord i løping! Lengste distanse: 8 km. Tidligere rekord: 6,5 km.
+
+Gjeldende rekorder vises i `/pust meg` og i den private fremdriftsmeldingen
+etter egen registrering. Første registrerte verdi for hver rekord etablerer
+utgangspunktet, uten en rekordfeiring. Lik verdi utløser heller ingen ny feiring.
+
+Eksisterende aktiviteter inngår i rekordgrunnlaget når funksjonen tas i bruk,
+uten å sende feiringer for gammel historikk. Redigering og sletting oppdaterer
+gjeldende rekorder. Rekorden tilhører personen som utførte aktiviteten, også når
+en kollega registrerer den. Rolige perioder nullstiller ikke rekordene.
+
+Etterregistrering sammenlignes med alle allerede registrerte aktiviteter frem
+til dagens dato. Fremtidsdaterte aktiviteter inngår først på aktivitetsdatoen
+i Oslo-tid, uten en forsinket feiring. Redigering og sletting sender ingen nye
+rekordfeiringer. Ved redigering erstattes aktivitetens innlegg uten den gamle
+feiringen. Andre tidligere innlegg beholdes som feiringer fra registreringen,
+mens `/pust meg` alltid viser gjeldende rekorder.
 
 ## 6. Gruppens Pust
 
