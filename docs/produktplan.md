@@ -155,12 +155,15 @@ Gruppen har to parallelle ukesmål:
 1. Antall medlemmer som har registrert minst én kvalifiserende aktivitet.
 2. Samlet antall kvalifiserende aktivitetsminutter.
 
-Begge målene må nås for å videreføre gruppens streak. Ved oppstart foreslås:
+Begge målene må nås for å videreføre gruppens streak. Gjeldende ukesmål:
 
-- Deltakelse: 4 av 14 medlemmer.
+- Deltakelse: 7 av 14 medlemmer.
 - Aktivitet: 240 minutter totalt.
 - Alle registrerte minutter teller mot gruppens minuttmål, uten grense per person.
 - Alle minutter gir fortsatt personlige Sparks.
+
+Deltakelsesmålet ble økt fra 4 til 7 den 29. oktober 2026, basert på at
+deltakelsen har stabilisert seg rundt syv personer per uke.
 
 Status viser minutter per aktivitetstype og registrert distanse der den finnes,
 sortert etter flest minutter. Oppsummeringen viser antall aktiviteter, antall
