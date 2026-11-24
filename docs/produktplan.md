@@ -174,7 +174,7 @@ Gruppen har to parallelle ukesmål:
 
 Begge målene må nås for å videreføre gruppens streak. Gjeldende ukesmål:
 
-- Deltakelse: 7 av 14 medlemmer.
+- Deltakelse ved innføring av måladministrasjon: 8 av 14 medlemmer.
 - Aktivitet: 1 200 minutter totalt, tilsvarende 20 timer sammen.
 - Alle registrerte minutter teller mot gruppens minuttmål, uten grense per person.
 - Alle minutter gir fortsatt personlige Sparks.
@@ -191,8 +191,8 @@ Målet bør vurderes på nytt etter fire uker.
 Status viser minutter per aktivitetstype og registrert distanse der den finnes,
 sortert etter flest minutter. Oppsummeringen viser antall aktiviteter, antall
 aktivitetstyper og samlet tid og distanse. Deltakelsesmålet krever fortsatt at
-flere medlemmer bidrar. Gruppestreak beregnes med samme regel uten minuttgrense
-også for tidligere uker; allerede publiserte søndagssammendrag endres ikke.
+flere medlemmer bidrar. Gruppestreak beregnes uten minuttgrense, med målene som gjelder hver uke.
+Allerede publiserte søndagssammendrag endres ikke.
 
 ### 6.1 Adaptive mål
 
@@ -242,8 +242,9 @@ nullstilling eller lagstreak i denne versjonen.
 - «Del status i #pust» poster et øyeblikksbilde med en knapp for å åpne laget.
   Opprettelse og medlemsendringer poster ikke automatisk i kanalen.
 
-Ukentlige lagmål, lagstreak, pauser, distansemål og automatiske laginnlegg er
-utsatt til senere versjoner.
+Distansemål er støttet som kilometer med maks to desimaler. Bare registrert
+distanse som passer aktivitetsfilteret teller. Ukentlige lagmål, lagstreak,
+pauser og automatiske laginnlegg er utsatt til senere versjoner.
 
 ## 8. Prestasjoner og samarbeidsopplevelser
 
@@ -270,22 +271,22 @@ funksjonsnivåer har like progresjonsmuligheter.
 
 ## 9. Arrangementer
 
-Alle medlemmer skal kunne opprette et fysisk, virtuelt eller samarbeidsbasert
-arrangement. Et arrangement kan inneholde:
+`/pust inviter` åpner kommende og nylige invitasjoner. Første versjon har tittel,
+aktivitetstype, dato og klokkeslett i Oslo, varighet, sted eller lenke og valgfri
+beskrivelse. Delte innlegg er korte og bruker knapper; detaljer og deltakere
+vises i modaler tilpasset mobil.
 
-- Tittel og beskrivelse
-- Type arrangement
-- Dato, tidspunkt og sted eller lenke
-- Aktivitetstype og forventet intensitet
-- Informasjon om tilgjengelighet
-- Valgfri deltakergrense og påminnelse
-- Valgfri kobling til et Pustelag
+Medlemmer svarer «Blir med», «Kanskje» eller «Kan ikke». Arrangøren kan redigere
+eller avlyse før start. Endret tid, sted, aktivitetstype eller varighet krever
+ny bekreftelse fra andre påmeldte. Invitasjonen oppdateres i samme kanalinnlegg.
 
-Medlemmer kan svare «Blir med», «Kanskje» eller «Kan ikke». Oppretteren kan
-redigere eller avlyse, og Pust-voktere kan fjerne arrangementer. Etterpå kan Pust
-tilby deltakerne en forhåndsutfylt aktivitetsregistrering.
+Etter slutt får bekreftede deltakere én privat loggpåminnelse med forhåndsutfylt
+registrering. Påmelding teller aldri som aktivitet. Avlyste aktiviteter sender
+ingen påminnelse. Varige sendeforsøk hindrer automatisk ny sending ved omstart
+eller usikre Slack-feil.
 
-Arrangementer inngår i andre leveranse.
+Deltakergrenser, kobling til Pustelag, forhåndspåminnelser og moderering av
+andres invitasjoner er mulige senere utvidelser.
 
 ## 10. Slack-opplevelse
 
@@ -297,7 +298,8 @@ Foreslåtte kommandoer:
 - `/pust rediger`
 - `/pust slett`
 - `/pust lag`
-- `/pust arrangement`
+- `/pust inviter`
+- `/pust admin`
 - `/pust hjelp`
 
 MVP bruker strukturerte Slack-modaler. Fritekst som «@Pust logg 30 min gåtur for
@@ -332,7 +334,12 @@ og at aktivt registrerte detaljer publiseres i kanalen.
 
 ## 12. Pust-voktere
 
-Slack-administratorene utpeker to eller tre Pust-voktere. De kan:
+Pust-voktere velges eksplisitt gjennom Slack-bruker-ID-er i `PUST_ADMIN_USER_IDS`.
+Implementert: `/pust admin` endrer deltaker- og minuttmål fra en valgt mandag,
+tidligst neste uke. Beslutninger lagres med aktør og tidspunkt i SQLite og
+kan ikke overskrives av deployer. Tidligere ukers mål og arkivrapporter beholdes.
+
+Mulige senere rettigheter:
 
 - Justere eller pause adaptive ukesmål.
 - Håndtere feilregistreringer og sletting.

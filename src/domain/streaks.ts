@@ -30,17 +30,18 @@ interface GroupStreakGoals {
 export function groupWeeklyStreak(
   activities: readonly Activity[],
   currentWeek: DateRange,
-  goals: GroupStreakGoals,
+  goals: GroupStreakGoals | ((weekStart: string) => GroupStreakGoals),
 ): number {
   const successful = (range: DateRange): boolean => {
+    const target = typeof goals === "function" ? goals(range.start) : goals;
     const progress = calculateWeeklyProgress(
       activities.filter(
         (activity) => activity.activityDate >= range.start && activity.activityDate <= range.end,
       ),
     );
     return (
-      progress.participants >= goals.participantGoal &&
-      progress.totalMinutes >= goals.minutesGoal
+      progress.participants >= target.participantGoal &&
+      progress.totalMinutes >= target.minutesGoal
     );
   };
   let week = successful(currentWeek) ? currentWeek : previousWeek(currentWeek);

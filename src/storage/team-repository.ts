@@ -41,6 +41,29 @@ export class TeamRepository {
       this.database.exec(`ALTER TABLE team_challenges ADD COLUMN activity_type TEXT
         CHECK (activity_type IS NULL OR activity_type IN (${activityTypes.map(type => `'${type}'`).join(", ")}))`);
     }
+    this.migrateDistanceGoals();
+  }
+
+  private migrateDistanceGoals(): void {
+    const schema = this.database.prepare("SELECT sql FROM sqlite_master WHERE name = 'team_challenges'").get() as { sql: string };
+    if (schema.sql.includes("'distance'")) return;
+    // Rebuild the CHECK constraint atomically, keeping IDs and memberships intact.
+    this.database.exec("PRAGMA foreign_keys = OFF; BEGIN IMMEDIATE;");
+    try {
+      this.database.exec(`CREATE TABLE team_challenges_distance (
+        id TEXT PRIMARY KEY, request_id TEXT NOT NULL UNIQUE, creator_id TEXT NOT NULL,
+        name TEXT NOT NULL, start_date TEXT NOT NULL, end_date TEXT NOT NULL CHECK(end_date >= start_date),
+        goal_kind TEXT NOT NULL CHECK(goal_kind IN ('participation', 'minutes', 'distance')),
+        goal_target REAL NOT NULL CHECK(goal_target > 0 AND (goal_kind <> 'participation' OR goal_target <= 100)),
+        revision INTEGER NOT NULL DEFAULT 0,
+        activity_type TEXT CHECK(activity_type IS NULL OR activity_type IN (${activityTypes.map(type => `'${type}'`).join(", ")})));
+        INSERT INTO team_challenges_distance SELECT id, request_id, creator_id, name, start_date, end_date, goal_kind, goal_target, revision, activity_type FROM team_challenges;
+        DROP TABLE team_challenges;
+        ALTER TABLE team_challenges_distance RENAME TO team_challenges;`);
+      if (this.database.prepare("PRAGMA foreign_key_check").all().length) throw new Error("Ugyldige lagreferanser etter migrering.");
+      this.database.exec("COMMIT");
+    } catch (error) { this.database.exec("ROLLBACK"); throw error; }
+    finally { this.database.exec("PRAGMA foreign_keys = ON"); }
   }
 
   close(): void { this.database.close(); }

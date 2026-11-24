@@ -6,6 +6,8 @@ export function helpMessage(): string {
     "• `/pust logg` — registrer aktivitet for deg selv eller en kollega",
     "• `/pust status` — del ukens felles fremdrift i #pust",
     "• `/pust lag` — opprett eller bli med i et lag for alle aktivitetstyper eller én valgt type",
+    "• `/pust inviter` — inviter til aktivitet, svar og se deltakere",
+    "• `/pust admin` — planlegg ukesmål som Pust-vokter",
     "• `/pust meg` — se dine Sparks, nivå og personlige rekorder privat",
     "• `/pust rediger` — rediger en nylig aktivitet",
     "• `/pust slett` — slett en nylig aktivitet",

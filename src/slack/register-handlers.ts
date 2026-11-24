@@ -1,4 +1,9 @@
+import type { MessageSender } from "./message-sender.js";
 import { registerTeamHandlers, teamOverview } from "./team-handlers.js";
+import { registerWeeklyGoalHandlers, weeklyGoalView } from "./weekly-goal-handlers.js";
+import { registerInvitationHandlers, invitationOverview } from "./invitation-handlers.js";
+import type { WeeklyGoalRepository } from "../storage/weekly-goal-repository.js";
+import type { InvitationRepository } from "../storage/invitation-repository.js";
 import type { TeamRepository } from "../storage/team-repository.js";
 import type { App } from "@slack/bolt";
 import { isActivityType, totalActivitySparks, validateActivity, type ActivityInput } from "../domain/activity.js";
@@ -30,14 +35,34 @@ interface HandlerDependencies {
   weeklyParticipantGoal: number;
   weeklyMinutesGoal: number;
   archiveUrl?: string;
+  weeklyGoals?: WeeklyGoalRepository;
+  invitations?: InvitationRepository;
+  sendInvitation?: MessageSender;
 }
 
 export function registerSlackHandlers(app: App, dependencies: HandlerDependencies): void {
   registerTeamHandlers(app, dependencies);
+  if (dependencies.weeklyGoals) registerWeeklyGoalHandlers(app, dependencies.weeklyGoals);
+  if (dependencies.invitations) {
+    if (!dependencies.sendInvitation) throw new Error("Invitasjoner krever en meldingssender.");
+    registerInvitationHandlers(app, dependencies.invitations, dependencies.pustChannelId, dependencies.sendInvitation);
+  }
   app.command("/pust", async ({ ack, command, client, respond }) => {
     await ack();
 
     const subcommand = command.text.trim().toLocaleLowerCase("nb-NO");
+    if (subcommand === "admin") {
+      if (!dependencies.weeklyGoals?.canManage(command.user_id)) {
+        await respond({ response_type: "ephemeral", text: "Bare konfigurerte Pust-voktere har tilgang til /pust admin." });
+        return;
+      }
+      await client.views.open({ trigger_id: command.trigger_id, view: weeklyGoalView(dependencies.weeklyGoals) });
+      return;
+    }
+    if (subcommand === "inviter" && dependencies.invitations) {
+      await client.views.open({ trigger_id: command.trigger_id, view: invitationOverview(dependencies.invitations) });
+      return;
+    }
     if (subcommand === "" || subcommand === "logg") {
       await client.views.open({
         trigger_id: command.trigger_id,

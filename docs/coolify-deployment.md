@@ -128,14 +128,36 @@ SLACK_PUST_CHANNEL_ID=C...
 PUST_GROUP_MEMBER_COUNT=14
 PUST_WEEKLY_PARTICIPANT_GOAL=8
 PUST_WEEKLY_MINUTES_GOAL=1200
+PUST_ADMIN_USER_IDS=U0123456789,U0987654321
 ```
 
 Den lokale `.env`-filen skal ikke lastes opp. Den er ignorert av Git.
 
-Sett runtime-verdiene `PUST_WEEKLY_PARTICIPANT_GOAL=8` og
-`PUST_WEEKLY_MINUTES_GOAL=1200` i Coolify og deploy på nytt. Eksplisitte
-miljøverdier overstyrer standardverdiene i både appen og Compose. Endringer
-i standardverdiene eller lokal `.env` oppdaterer ikke Coolify-variablene.
+Bruk faktiske Slack-bruker-ID-er for Pust-vokterne, ikke eksemplene over.
+Tom `PUST_ADMIN_USER_IDS` deaktiverer administrasjon. Endringer i listen krever
+omstart eller deploy. Ingen ekstra Slack-scopes kreves.
+
+`PUST_WEEKLY_PARTICIPANT_GOAL` og `PUST_WEEKLY_MINUTES_GOAL` brukes bare til å
+opprette kanalens startmål i SQLite. Etter første oppstart styres målene via
+`/pust admin`; miljøverdier og deployer overskriver ikke lagrede beslutninger.
+Den lokale `.env`-filen endrer ikke Coolify-variablene.
+
+## Deploy av invitasjoner, kilometermål og måladministrasjon
+
+Ta og verifiser en SQLite-backup før deploy. Oppstart bygger om
+`team_challenges` transaksjonelt for å tillate distansemål og beholder eksisterende
+lag og medlemskap. Den legger også til `weekly_goal_changes`,
+`historical_weekly_goals`, `invitations`, `invitation_attendees` og
+`invitation_followups`. Eksisterende aktiviteter og arkivrapporter endres ikke.
+
+Kontroller at startverdiene er 8 og 1200 før første deploy. Legg inn Pust-vokternes
+bruker-ID-er i Coolify. Kjør tester, typesjekk og build. Etter deploy kontrolleres
+de tre nye flytene på mobil etter Slack-testplanen. Ingen invitasjoner eller
+påminnelser sendes bare ved oppstart uten at brukere har opprettet invitasjoner.
+
+Rollback til eldre kode etter opprettelse av kilometermål krever gjenoppretting
+fra backup eller en versjon som forstår distansemål. Eldre kode leser også
+ukesmål fra miljøet og vil overse planlagte mål. Behold volum og backup.
 
 ## Vedvarende lagring og backup
 

@@ -10,6 +10,7 @@ export interface Config {
   weeklyRecapEnabled: boolean;
   archiveEnabled: boolean;
   publicUrl: string;
+  pustAdminUserIds: string[];
 }
 
 function required(name: string): string {
@@ -31,7 +32,14 @@ export function loadConfig(): Config {
     weeklyRecapEnabled: booleanSetting("PUST_WEEKLY_RECAP_ENABLED", false),
     archiveEnabled: booleanSetting("PUST_ARCHIVE_ENABLED", false),
     publicUrl: publicUrlSetting(),
+    pustAdminUserIds: adminUserIds(),
   };
+}
+
+function adminUserIds(): string[] {
+  const ids = (process.env.PUST_ADMIN_USER_IDS ?? "").split(/[\s,]+/).filter(Boolean);
+  if (ids.some(id => !/^[UW][A-Z0-9]+$/.test(id))) throw new Error("PUST_ADMIN_USER_IDS må inneholde Slack-bruker-ID-er, skilt med komma.");
+  return [...new Set(ids)];
 }
 
 function publicUrlSetting(): string {

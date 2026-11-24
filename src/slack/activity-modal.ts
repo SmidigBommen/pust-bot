@@ -1,9 +1,9 @@
 import type { ModalView } from "@slack/types";
-import { activityLabels } from "../domain/activity.js";
+import { activityLabels, type ActivityType } from "../domain/activity.js";
 
 export const LOG_ACTIVITY_CALLBACK_ID = "pust_log_activity";
 
-export function activityModal(defaultParticipant: string, today: string): ModalView {
+export function activityModal(defaultParticipant: string, today: string, preset?: { activityType: ActivityType; minutes: number }): ModalView {
   return {
     type: "modal",
     callback_id: LOG_ACTIVITY_CALLBACK_ID,
@@ -32,6 +32,7 @@ export function activityModal(defaultParticipant: string, today: string): ModalV
             text: { type: "plain_text", text },
             value,
           })),
+          ...(preset ? { initial_option: { text: { type: "plain_text" as const, text: activityLabels[preset.activityType] }, value: preset.activityType } } : {}),
         },
       },
       {
@@ -43,6 +44,7 @@ export function activityModal(defaultParticipant: string, today: string): ModalV
           action_id: "value",
           is_decimal_allowed: false,
           min_value: "10",
+          ...(preset ? { initial_value: String(preset.minutes) } : {}),
         },
       },
       {

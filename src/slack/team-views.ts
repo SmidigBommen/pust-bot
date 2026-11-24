@@ -3,6 +3,7 @@ import type { ViewOutput } from "@slack/bolt";
 import { teamProgress, type TeamChallenge, type TeamInput } from "../domain/team-challenge.js";
 import { activityLabels, activityTypes, type Activity, type ActivityType } from "../domain/activity.js";
 import { activitySummary } from "./activity-summary.js";
+import { number } from "./compact-ui.js";
 
 const plain = (text: string): PlainTextElement => ({ type: "plain_text", text });
 const section = (text: string): KnownBlock => ({ type: "section", text: { type: "mrkdwn", text } });
@@ -20,6 +21,7 @@ export function activityRuleText(input: TeamInput): string {
 
 export function goalText(input: TeamInput): string {
   if (input.goal.kind === "minutes") return `${input.goal.target} minutter sammen i hele perioden`;
+  if (input.goal.kind === "distance") return `${number(input.goal.target)} km sammen i hele perioden`;
   const activity = input.activityType == null ? "aktivitet" : "aktivitet av valgt type";
   return input.goal.target === 100 ? `Alle registrerer minst én ${activity} i perioden`
     : `${input.goal.target} % av medlemmene registrerer minst én ${activity} i perioden`;
@@ -38,12 +40,10 @@ export function teamStatusText(team: TeamChallenge, activities: readonly Activit
     `🌬️ *${escape(team.name)}*`,
     `*${activityRuleText(team)}*`,
     `${date(team.startDate)}–${date(team.endDate)} · ${state}`,
-    `*Mål:* ${goalText(team)}`,
-    team.goal.kind === "minutes" ? `⚡ *${status.value}/${status.target} minutter*`
+    team.goal.kind === "distance" ? `📍 *${number(status.value)} / ${number(status.target)} km* · ${team.memberIds.length} deltakere`
+      : team.goal.kind === "minutes" ? `⚡ *${status.value}/${status.target} min* · ${team.memberIds.length} deltakere`
       : `👥 *${status.value}/${team.memberIds.length} har deltatt* · målet er ${status.target} ${status.target === 1 ? "person" : "personer"}`,
-    `${team.memberIds.length} medlemmer`,
-    ...activitySummary(status.progress, "I perioden", "Aktiviteter i perioden"),
-    "", result,
+    result,
   ].join("\n");
 }
 
@@ -67,7 +67,9 @@ export function teamListView(teams: TeamChallenge[], viewer: string, closed: boo
 }
 
 export function teamDetailView(team: TeamChallenge, activities: readonly Activity[], viewer: string, today: string, notice?: string): ModalView {
-  const blocks: KnownBlock[] = [section(teamStatusText(team, activities, today))];
+  const blocks: KnownBlock[] = [section(teamStatusText(team, activities, today)),
+    section(activitySummary(teamProgress(team, activities, today).progress, "I perioden", "Aktiviteter").join("\n"))];
+  if (team.goal.kind === "distance") blocks.push(section("Bare registrerte km teller mot distansemålet. Økter uten km gir fortsatt Sparks og minutter til #pust."));
   blocks.push(section(`*Medlemmer*\n${team.memberIds.length ? team.memberIds.slice(0, 50).map(id => `<@${id}>`).join(", ") : "Ingen medlemmer akkurat nå."}${team.memberIds.length > 50 ? ` og ${team.memberIds.length - 50} til` : ""}`));
   if (notice) blocks.push(section(escape(notice)));
   const elements = [button("Oppdater", "pust_team_open", team.id), button("Alle lag", "pust_team_list", "false:0")];
@@ -79,7 +81,7 @@ export function teamDetailView(team: TeamChallenge, activities: readonly Activit
   }
   if (viewer === team.creatorId && today < team.startDate) elements.push(button("Rediger", "pust_team_edit", team.id));
   elements.push(button("Del status i #pust", "pust_team_share", team.id));
-  blocks.push({ type: "actions", elements });
+  for (let i = 0; i < elements.length; i += 2) blocks.push({ type: "actions", elements: elements.slice(i, i + 2) });
   blocks.push(section(today <= team.endDate
     ? `${activityRuleText(team)}. Aktiviteter som passer lagets regel teller fra hele perioden, også fra før innmelding. Logg som vanlig; andre aktiviteter teller fortsatt for deg og #pust. Ved inn- og utmelding endres lagets fremdrift. Deltakelsesmålet følger medlemslisten og rundes opp.`
     : "Medlemslisten er låst. Etterregistrering, redigering og sletting av aktiviteter kan fortsatt oppdatere tallene."));
@@ -91,6 +93,7 @@ export function teamFormView(metadata: TeamFormMetadata, input: TeamInput): Moda
   const inputBlock = (block_id: string, label: string, element: InputBlock["element"]): InputBlock => ({ type: "input", block_id, label: plain(label), element });
   const options = [
     { text: plain("Deltakelse"), value: "participation" }, { text: plain("Minutter sammen"), value: "minutes" },
+    { text: plain("Kilometer sammen"), value: "distance" },
   ];
   const activityOptions = [
     { text: plain("Alle aktivitetstyper"), value: "all" },
@@ -107,12 +110,13 @@ export function teamFormView(metadata: TeamFormMetadata, input: TeamInput): Moda
         type: "static_select", action_id: "value", options: activityOptions,
         initial_option: activityOptions.find(option => option.value === (input.activityType ?? "all"))!,
       }),
-      { ...inputBlock("goal", "Felles mål for hele perioden", { type: "static_select", action_id: "pust_team_goal", options, initial_option: options[kind === "minutes" ? 1 : 0]! }), dispatch_action: true },
-      inputBlock(kind, kind === "minutes" ? "Antall minutter sammen" : "Andel som deltar i prosent (100 = alle)", {
-        type: "number_input", action_id: "value", is_decimal_allowed: false, min_value: "1",
+      { ...inputBlock("goal", "Felles mål", { type: "static_select", action_id: "pust_team_goal", options, initial_option: options.find(option => option.value === kind)! }), dispatch_action: true },
+      inputBlock(kind, kind === "distance" ? "Kilometer sammen" : kind === "minutes" ? "Minutter sammen" : "Deltakelse i prosent (100 = alle)", {
+        type: "number_input", action_id: "value", is_decimal_allowed: kind === "distance", min_value: kind === "distance" ? "0.1" : "1",
         ...(kind === "participation" ? { max_value: "100" } : {}), initial_value: String(input.goal.target),
       }),
-      section("Velg alle aktivitetstyper eller én bestemt type. For å delta må du registrere minst 10 minutter som passer lagets regel. Målet gjelder hele perioden uten ukentlige nullstillinger. Aktivitetstype, mål og datoer låses på startdatoen. Laget trenger minst to medlemmer for å nå målet."),
+      section("Minst 2 medlemmer. Økter fra 10 min teller. Mål, aktivitetstype og datoer låses ved start."),
+      ...(kind === "distance" ? [section("Bare registrerte km av valgt aktivitetstype teller. Ingen distanse beregnes fra minutter.")] : []),
     ],
   };
 }

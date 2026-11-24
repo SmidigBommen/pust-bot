@@ -88,6 +88,54 @@ describe("date-range Pustelag", () => {
     expect(progress(team.id).value).toBe(350);
   });
 
+  it("counts only recorded kilometers of the chosen type for distance goals, including corrections and membership changes", () => {
+    const team = teams.create({ ...input, activityType: "walk_hike", goal: { kind: "distance", target: 5.25 } }, "U1");
+    teams.membership(team.id, "U2", true);
+    const first = log("U1");
+    log("U2");
+    activities.create({ participantSlackId: "U2", registeredBySlackId: "U2", type: "cycle", minutes: 60, distanceKm: 100, activityDate: input.startDate });
+    activities.create({ participantSlackId: "U2", registeredBySlackId: "U2", type: "walk_hike", minutes: 60, activityDate: input.startDate });
+    log("OUTSIDER");
+    log("U1", "2026-10-05");
+    now("2026-10-03T10:00:00Z");
+    expect(progress(team.id)).toMatchObject({ value: 5, target: 5.25, reached: false });
+    expect(progress(team.id).progress.totalMinutes).toBe(120);
+    activities.updateForParticipant(first.id, "U1", { ...first, distanceKm: 2.75 });
+    expect(progress(team.id)).toMatchObject({ value: 5.25, reached: true });
+    expect(teamStatusText(teams.find(team.id)!, activities.listThrough(input.endDate), teams.today())).toContain("5,25 / 5,25 km");
+    teams.membership(team.id, "U2", false);
+    expect(progress(team.id)).toMatchObject({ value: 2.75, target: 5.25, reached: false });
+    teams.membership(team.id, "U2", true);
+    activities.deleteControlledBy(first.id, "U1");
+    expect(progress(team.id).value).toBe(2.5);
+    teams.close(); teams = new TeamRepository(path, () => clock);
+    expect(teams.find(team.id)?.goal).toEqual({ kind: "distance", target: 5.25 });
+  });
+
+  it("adds decimal distance goals to the deployed schema without losing foreign-key memberships or request IDs", () => {
+    const legacyPath = join(folder, "distance-migration.sqlite");
+    const database = new DatabaseSync(legacyPath);
+    database.exec(`PRAGMA foreign_keys = ON;
+      CREATE TABLE team_challenges (id TEXT PRIMARY KEY, request_id TEXT NOT NULL UNIQUE, creator_id TEXT NOT NULL,
+        name TEXT NOT NULL, start_date TEXT NOT NULL, end_date TEXT NOT NULL CHECK(end_date >= start_date),
+        goal_kind TEXT NOT NULL CHECK(goal_kind IN ('participation','minutes')),
+        goal_target INTEGER NOT NULL CHECK(goal_target > 0 AND (goal_kind = 'minutes' OR goal_target <= 100)),
+        revision INTEGER NOT NULL DEFAULT 0, activity_type TEXT);
+      CREATE TABLE team_members (team_id TEXT NOT NULL REFERENCES team_challenges(id), slack_id TEXT NOT NULL, PRIMARY KEY(team_id,slack_id));
+      INSERT INTO team_challenges VALUES ('old', 'original-request', 'U1', 'Langtur', '2026-10-02', '2026-10-04', 'minutes', 300, 4, 'walk_hike');
+      INSERT INTO team_members VALUES ('old','U1'), ('old','U2');`);
+    database.close();
+    const migrated = new TeamRepository(legacyPath, () => clock);
+    expect(migrated.find("old")).toMatchObject({ memberIds: ["U1", "U2"], revision: 4, activityType: "walk_hike", goal: { kind: "minutes", target: 300 } });
+    expect(migrated.create(input, "U1", "original-request").id).toBe("old");
+    const edited = migrated.edit("old", "U1", 4, { ...input, activityType: "walk_hike", goal: { kind: "distance", target: 12.5 } });
+    expect(edited.goal.target).toBe(12.5);
+    migrated.close();
+    const check = new DatabaseSync(legacyPath);
+    expect(check.prepare("PRAGMA foreign_key_check").all()).toEqual([]);
+    check.close();
+  });
+
   it("counts inclusive dates across the weekend, excludes outsiders and future activity, and follows edits", () => {
     const team = teams.create(input, "U1");
     teams.membership(team.id, "U2", true);
@@ -263,6 +311,10 @@ describe("challenge input rules", () => {
     { ...input, goal: { kind: "participation", target: 101 } },
     { ...input, goal: { kind: "minutes", target: 1.5 } },
     { ...input, goal: { kind: "minutes", target: NaN } },
+    { ...input, goal: { kind: "distance", target: 0 } },
+    { ...input, goal: { kind: "distance", target: 0.001 } },
+    { ...input, goal: { kind: "distance", target: Infinity } },
+    { ...input, goal: { kind: "distance", target: 2.345 } },
     { ...input, activityType: "unknown" },
   ] as TeamInput[])("rejects invalid input %#", invalid => {
     expect(() => validateTeam(invalid, "2026-10-01")).toThrow();

@@ -10,6 +10,10 @@ import { createWeeklyRecapSender } from "./slack/weekly-recap-sender.js";
 import { ReportRepository } from "./storage/report-repository.js";
 import { WeeklyArchive, startWeeklyArchive } from "./weekly-archive.js";
 import { startArchiveServer } from "./web/server.js";
+import { WeeklyGoalRepository } from "./storage/weekly-goal-repository.js";
+import { InvitationRepository } from "./storage/invitation-repository.js";
+import { createSlackMessageSender } from "./slack/message-sender.js";
+import { startInvitationFollowups } from "./invitation-followups.js";
 
 const config = loadConfig();
 const app = new App({
@@ -21,8 +25,16 @@ const app = new App({
 const repository = new ActivityRepository(config.databasePath);
 const teams = new TeamRepository(config.databasePath);
 const reports = config.archiveEnabled ? new ReportRepository(config.databasePath, config.pustChannelId) : null;
-const archive = reports ? new WeeklyArchive(reports, repository, config) : null;
+const weeklyGoals = new WeeklyGoalRepository(config.databasePath, config.pustChannelId,
+  { participantGoal: config.weeklyParticipantGoal, minutesGoal: config.weeklyMinutesGoal }, config.pustAdminUserIds);
+const invitations = new InvitationRepository(config.databasePath, config.pustChannelId);
+const settings = { ...config, weeklyGoals };
+const sendInvitation = createSlackMessageSender(config.slackBotToken);
+const archive = reports ? new WeeklyArchive(reports, repository, settings) : null;
 registerSlackHandlers(app, {
+  weeklyGoals,
+  invitations,
+  sendInvitation,
   teams,
   repository,
   pustChannelId: config.pustChannelId,
@@ -37,9 +49,11 @@ const healthServer = reports
   ? await startArchiveServer({ port: config.healthPort, reports, onError: error => app.logger.error("Arkivforespørsel feilet", error) })
   : await startHealthServer(config.healthPort);
 await app.start();
+const stopInvitationFollowups = startInvitationFollowups(invitations, sendInvitation, app.logger);
 const stopWeeklyRecap = config.weeklyRecapEnabled
   ? startWeeklyRecap({
       repository,
+      weeklyGoals,
       channelId: config.pustChannelId,
       groupMemberCount: config.groupMemberCount,
       weeklyParticipantGoal: config.weeklyParticipantGoal,
@@ -60,10 +74,13 @@ async function stop(signal: string): Promise<void> {
   app.logger.info(`Stopper Pust etter ${signal}`);
   try {
     stopWeeklyArchive();
+    await stopInvitationFollowups();
     await stopWeeklyRecap();
     await stopHealthServer(healthServer);
     await app.stop();
     teams.close();
+    weeklyGoals.close();
+    invitations.close();
     reports?.close();
     repository.close();
     process.exitCode = 0;

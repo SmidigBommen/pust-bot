@@ -2,7 +2,7 @@ import { isActivityType, type Activity, type ActivityType } from "./activity.js"
 import { calculateWeeklyProgress } from "./weekly-progress.js";
 export { osloDate } from "./week.js";
 
-export type TeamGoal = { kind: "participation"; target: number } | { kind: "minutes"; target: number };
+export type TeamGoal = { kind: "participation"; target: number } | { kind: "minutes"; target: number } | { kind: "distance"; target: number };
 
 export interface TeamInput {
   name: string;
@@ -42,10 +42,15 @@ export function validateTeam(input: TeamInput, today: string): void {
   if (!validDate(input.endDate) || input.endDate < input.startDate) {
     throw new TeamRuleError("Sluttdato må være på eller etter startdato.", "end");
   }
-  if (input.goal.kind !== "participation" && input.goal.kind !== "minutes") {
-    throw new TeamRuleError("Velg deltakelse eller minutter.", "goal");
+  if (input.goal.kind !== "participation" && input.goal.kind !== "minutes" && input.goal.kind !== "distance") {
+    throw new TeamRuleError("Velg deltakelse, minutter eller kilometer.", "goal");
   }
-  if (!Number.isSafeInteger(input.goal.target) || input.goal.target < 1 ||
+  if (input.goal.kind === "distance") {
+    if (!Number.isFinite(input.goal.target) || input.goal.target < 0.1 || input.goal.target > 1_000_000 ||
+        Math.abs(input.goal.target * 100 - Math.round(input.goal.target * 100)) > 0.000001) {
+      throw new TeamRuleError("Velg 0,1–1 000 000 km, med maks to desimaler.", "distance");
+    }
+  } else if (!Number.isSafeInteger(input.goal.target) || input.goal.target < 1 ||
       (input.goal.kind === "participation" && input.goal.target > 100)) {
     throw new TeamRuleError(input.goal.kind === "participation"
       ? "Velg en hel prosent fra 1 til 100. 100 betyr alle."
@@ -61,7 +66,8 @@ export function teamProgress(team: TeamChallenge, activities: readonly Activity[
     (team.activityType === null || activity.type === team.activityType)));
   const target = team.goal.kind === "participation"
     ? Math.ceil(members.size * team.goal.target / 100) : team.goal.target;
-  const value = team.goal.kind === "participation" ? progress.participants : progress.totalMinutes;
+  const value = team.goal.kind === "participation" ? progress.participants
+    : team.goal.kind === "distance" ? Math.round(progress.distanceKm * 100) / 100 : progress.totalMinutes;
   const phase = today < team.startDate ? "upcoming" : today > team.endDate ? "closed" : "active";
   return { progress, target, value, phase, reached: members.size >= 2 && value >= target };
 }

@@ -146,8 +146,8 @@ Ingen kameraknapp eller valg av tidligere opplastede bilder inngår i denne vers
 
 `/pust lag` åpner en privat oversikt der du kan opprette, finne og bli med på lag.
 Oppretteren velger navn, start- og sluttdato og ett mål for hele perioden:
-andel medlemmer som registrerer aktivitet (100 prosent betyr alle) eller
-samlet antall minutter. Skjemaet viser en oppsummering før lagring. Oppretteren
+andel medlemmer som registrerer aktivitet (100 prosent betyr alle),
+samlet antall minutter eller kilometer. Skjemaet viser en oppsummering før lagring. Oppretteren
 blir selv med; et lag trenger minst to medlemmer for å nå målet.
 
 «Hvilke aktiviteter teller?» lar oppretteren velge alle aktivitetstyper eller
@@ -173,20 +173,73 @@ Lagstatus gjenbruker aktivitetsoversikten med minutter, kilometer og totalsum.
 Denne versjonen sender ingen automatiske laginnlegg. Søndagssammendraget for
 hele kanalen fortsetter som før.
 
+Kilometermål kan ha to desimaler. Bare registrert distanse fra aktiviteter som
+passer lagets filter teller. Økter uten distanse gir fortsatt personlige Sparks
+og minutter til #pust. Målet står fast ved inn- og utmelding. Delte laginnlegg
+viser kort status med knapp til detaljer; aktivitetsoversikten ligger i modalen.
+
 Ingen nye Slack-scopes eller miljøvariabler kreves. Ta SQLite-backup før første
 deploy: oppstart legger til `team_challenges` og `team_members` i eksisterende
 database. Versjonen med aktivitetsvalg legger til `activity_type` i
 `team_challenges`; tom verdi betyr alle typer. Ta backup før denne migreringen
 også. Eksisterende aktiviteter beholdes.
 
+Versjonen med kilometermål bygger om målbegrensningen i `team_challenges`
+transaksjonelt. ID-er, medlemskap, revisjoner og tidligere mål beholdes.
+Ta SQLite-backup før denne migreringen. Etter opprettelse av kilometermål må
+rollback bruke en versjon som forstår dem, eller gjenopprette backupen.
+
+## Felles aktivitetsinvitasjoner
+
+`/pust inviter` viser kommende invitasjoner og aktiviteter fra siste syv dager,
+fem om gangen. «Ny invitasjon» åpner skjema for tittel, aktivitetstype, dato,
+klokkeslett i Oslo, varighet, møtested eller lenke og valgfri beskrivelse.
+«Inviter i #pust» lagrer invitasjonen og deler ett kort kanalinnlegg.
+
+«Blir med» og «Kanskje» lagrer svaret ditt. «Detaljer» åpner beskrivelse,
+deltakerliste og «Kan ikke». Arrangøren blir påmeldt ved opprettelse og kan
+redigere eller avlyse før start. Endringer oppdaterer samme kanalinnlegg.
+Endret tid, sted, aktivitetstype eller varighet setter andre deltakere til
+«Kanskje» slik at de kan bekrefte på nytt. Gamle knapper kan ikke bekrefte en
+endret invitasjon. Ugyldige og tvetydige klokkeslett ved klokkeomstilling avvises.
+
+Etter planlagt slutt får de som har svart «Blir med» én privat melding med
+«Logg aktivitet». Knappen åpner vanlig registrering med person, dato, type og
+varighet forhåndsutfylt. Kontroller og endre til det du faktisk gjorde før du
+lagrer. Påmelding gir ingen aktivitet, Sparks eller kilometer automatisk.
+Loggknappen er også tilgjengelig i invitasjonens detaljer etterpå.
+
+Avlyste invitasjoner sender ingen påminnelse. Boten sjekker hvert minutt og kan
+sende etter omstart hvis aktiviteten sluttet innen siste døgn. Invitasjoner og
+påminnelser har varige sendeforsøk, ti sekunders timeout og ingen automatiske
+nye forsøk etter Slack-feil. En usikker sending kan derfor utebli. Invitasjonen
+beholdes i oversikten, og arrangøren får beskjed om publiseringsfeilen.
+
+## Administrasjon av ukesmål
+
+`/pust admin` er privat og tilgjengelig for bruker-ID-ene i
+`PUST_ADMIN_USER_IDS`, for eksempel `U0123456789,U0987654321`. Tom verdi gir
+ingen administratortilgang. Tillatelsen kontrolleres på nytt ved lagring.
+Ingen nye Slack-scopes kreves.
+
+Skjemaet viser denne og neste ukes mål. Endringer gjelder fra en valgt mandag,
+tidligst neste uke, til neste planlagte endring. «Planlagte mål» viser gjeldende
+fremtidige beslutninger. «Historikk» viser hvem som endret hva og når. To
+samtidige redigeringer kan ikke overskrive hverandre uten at skjemaet åpnes på nytt.
+For å erstatte eller oppheve en planlagt endring, lagre ønskede mål for samme mandag.
+
+Målene lagres i SQLite. Miljøverdiene brukes bare ved første opprettelse av
+kanalens målhistorikk. Senere deployer eller miljøendringer overskriver ikke
+lagrede mål. Kjente mål fra publiserte arkivrapporter importeres ved første
+oppstart. For eldre uker uten kjente mål brukes de opprinnelige startverdiene.
+Live gruppestreak bruker hver ukes mål. Arkivrapportene endres ikke.
+
 ## Automatisk ukessammendrag
 
-Ukens deltakelsesmål er 8 personer, med 1 200 minutter som felles minuttmål.
-Det tilsvarer 20 timer sammen. `PUST_WEEKLY_PARTICIPANT_GOAL` og
-`PUST_WEEKLY_MINUTES_GOAL` kan overstyre målene. Eksisterende miljøverdier må
-settes til henholdsvis 8 og 1200 ved deploy.
-Gjeldende mål brukes også ved beregning av live gruppestreak for tidligere uker; publiserte
-arkivrapporter beholder målene og tallene som ble lagret ved publisering.
+Startmålene er 8 personer og 1 200 minutter, tilsvarende 20 timer sammen.
+`PUST_WEEKLY_PARTICIPANT_GOAL` og `PUST_WEEKLY_MINUTES_GOAL` angir startverdier
+før målhistorikken opprettes. Senere endringer gjøres med `/pust admin`.
+Manuell status, søndagssammendrag og arkiv bruker samme lagrede ukesmål.
 
 `/pust status` og søndagssammendraget viser minutter per aktivitetstype, med
 kilometer der distanse er registrert. Listen sorteres etter flest minutter.

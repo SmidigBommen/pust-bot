@@ -93,10 +93,10 @@ export function registerTeamHandlers(app: App, { teams, repository, pustChannelI
       const metadata = JSON.parse(body.view.private_metadata) as TeamFormMetadata;
       const draft = parseTeamInput(body.view.state);
       const kind = action.selected_option.value;
-      if (kind !== "participation" && kind !== "minutes") return;
+      if (kind !== "participation" && kind !== "minutes" && kind !== "distance") return;
       const input: TeamInput = {
         ...draft, startDate: draft.startDate || teams.today(), endDate: draft.endDate || teams.today(),
-        goal: { kind, target: kind === "participation" ? 100 : 300 },
+        goal: { kind, target: kind === "participation" ? 100 : kind === "distance" ? 100 : 300 },
       };
       await client.views.update({ view_id: body.view.id, hash: body.view.hash, view: teamFormView(metadata, input) });
     } catch (error) { logger.error("Målvalget kunne ikke oppdateres", error); }

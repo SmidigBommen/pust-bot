@@ -121,6 +121,25 @@ describe("Pustelag Slack flows", () => {
     expect(teams.list().teams).toHaveLength(0);
   });
 
+  it("selects, reviews and persists a fractional kilometer goal with the existing activity filter", async () => {
+    const draft: TeamInput = { ...input, activityType: "walk_hike", goal: { kind: "distance", target: 12.5 } };
+    const form = teamFormView({ requestId: "km" }, input);
+    const changed = await action("pust_team_goal", "", { ...form, state: state(input) } as Partial<ModalView>, "U1", { selected_option: { value: "distance" } });
+    expect(changed.blocks).toContainEqual(expect.objectContaining({ block_id: "distance", element: expect.objectContaining({ is_decimal_allowed: true }) }));
+    const review = await submit("pust_team_form", { ...changed, state: state(draft) });
+    expect(JSON.stringify(review.view)).toContain("12,5 km");
+    await submit("pust_team_confirm", review.view);
+    const team = teams.list().teams[0]!;
+    expect(team).toMatchObject({ goal: { kind: "distance", target: 12.5 }, activityType: "walk_hike" });
+    await action("pust_team_share", team.id, {});
+    const post = client.chat.postMessage.mock.calls[0]![0];
+    expect(post.text).toContain("0 / 12,5 km");
+    expect(post.text.split("\n").length).toBeLessThanOrEqual(5);
+    expect(post.text).not.toContain("Aktiviteter i perioden");
+    const invalid = await submit("pust_team_form", { ...changed, state: state({ ...draft, goal: { kind: "distance", target: 0 } }) });
+    expect(invalid.errors).toHaveProperty("distance");
+  });
+
   it("allows returning from review to edit and saves a minutes goal", async () => {
     const draft = { ...input, goal: { kind: "minutes" as const, target: 600 } };
     const review = await submit("pust_team_form", { private_metadata: JSON.stringify({ requestId: "req" }), state: state(draft) });

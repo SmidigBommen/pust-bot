@@ -187,3 +187,35 @@ Bruk denne sjekklisten i `#pust` før en ny versjon regnes som klar.
 - Automatiserte tester dekker feil i Slack, nedetid, forsinket arkivskriving,
   omstart, uforanderlige rapporter og backup. Ikke endre produksjonsklokken.
 - Stopp og start boten igjen. Rapportene og merkingene skal være bevart.
+
+## Ukesmål for Pust-voktere
+
+- `/pust admin` avviser en bruker utenfor `PUST_ADMIN_USER_IDS` privat.
+- En Pust-vokter ser gjeldende mål og tre felt. Ingen horisontal scrolling på mobil.
+- Lagre nye mål for neste mandag. Denne ukens status og historiske rapporter endres ikke.
+- «Planlagte mål» viser bare siste beslutning per startuke. «Historikk» viser også erstattede beslutninger og hvem som lagret dem.
+- To åpne skjemaer kan ikke overskrive hverandre; det eldste må åpnes på nytt.
+- Etter omstart beholdes lagrede mål selv om miljøets startverdier endres.
+- Automatiserte tester dekker ukegrensen i Oslo og streak over uker med ulike mål. Ikke endre produksjonsklokken.
+
+## Kilometer i Pustelag
+
+- Velg «Kilometer sammen», sett 12,5 km og velg bare gåtur. Valget beholdes gjennom oppsummering og lagring.
+- Bare registrerte gangkilometer teller. Sykling og økter uten distanse øker ikke distansetallet.
+- Kilometer oppdateres ved redigering, sletting, innmelding og utmelding. Målet står fast.
+- Del status på mobil. Kanalinnlegget er kort; aktivitetstotalene vises under «Se Pustelag».
+- Kontroller et eksisterende lag etter migreringen. Medlemmer, aktivitetsfilter og mål er bevart.
+
+## Invitasjoner på mobil
+
+- `/pust inviter` viser fem invitasjoner per side. Opprett en invitasjon med kort tittel og møtested.
+- Kanalinnlegget viser tittel, tid, varighet, sted og arrangør, med «Blir med», «Kanskje» og «Detaljer».
+- Test i Slack på telefon. Knappene er lesbare og eventuell linjebryting fungerer. Beskrivelse og deltakerliste åpnes separat.
+- Svar med to brukere og endre svar til «Kan ikke». Ingen aktiviteter eller Sparks opprettes ved påmelding.
+- Bare arrangøren kan redigere og avlyse før start. Endringer oppdaterer samme kanalinnlegg.
+- Endret tid eller sted setter andre deltakere til «Kanskje». Et gammelt RSVP-trykk avvises til detaljene åpnes på nytt.
+- Etter slutt får bare «Blir med»-deltakere én privat loggpåminnelse. «Kanskje» og avmeldte får ingen.
+- «Logg aktivitet» har riktig person, dato, type og varighet. Distanse er tom. Avbryt skjemaet og kontroller at ingenting logges.
+- Bekreft skjemaet og kontroller at vanlig registrering, Sparks og personlige rekorder fungerer.
+- Avlys en annen invitasjon. Innlegget merkes avlyst, påmelding stenges og loggpåminnelse uteblir.
+- Tester dekker duplikate innsendelser, omstart, klokkeomstilling og Slack-feil. Ved usikker publisering beholdes invitasjonen uten automatisk nytt sendeforsøk.
