@@ -130,7 +130,7 @@ describe("status", () => {
     expect(message).toContain("3/4 deltakere");
     expect(message).toContain("210/240 minutter");
     expect(message).toContain("Gruppestreak");
-    expect(personalStatusMessage(350, 3)).toContain("Personlig streak");
+    expect(personalStatusMessage(350, 3)).toContain("Streak: *3 uker*");
   });
 });
 

@@ -54,6 +54,11 @@ distanse i kilometer for hver aktivitetstype. Rekordene vises i `/pust meg`
 og i den private fremdriftsmeldingen etter egen registrering. Eksisterende
 aktiviteter teller med. Distanse er fortsatt valgfritt.
 
+Den private meldingen samler Sparks og nivå på én linje. Rekordene vises med
+aktivitetens emoji, `min` og `km` under «Personlige rekorder i Pust».
+«Lengste økt og distanse per aktivitet» forklarer verdiene én gang; de kan
+komme fra forskjellige økter. Kategorien «Annet» beholder navnet ved emojien.
+
 Når en ny registrering slår en rekord, feires den med ny og tidligere verdi i
 aktivitetens innlegg i `#pust`. Én aktivitet kan slå begge rekordene. Første
 verdi etablerer utgangspunktet, og lik verdi gir ingen ny feiring.
@@ -176,10 +181,10 @@ også. Eksisterende aktiviteter beholdes.
 
 ## Automatisk ukessammendrag
 
-Ukens deltakelsesmål er 7 personer, med 1 200 minutter som felles minuttmål.
+Ukens deltakelsesmål er 8 personer, med 1 200 minutter som felles minuttmål.
 Det tilsvarer 20 timer sammen. `PUST_WEEKLY_PARTICIPANT_GOAL` og
-`PUST_WEEKLY_MINUTES_GOAL` kan overstyre målene. Hvis minuttmålet allerede er
-satt til 240 i miljøet, må denne verdien endres til 1200 ved deploy.
+`PUST_WEEKLY_MINUTES_GOAL` kan overstyre målene. Eksisterende miljøverdier må
+settes til henholdsvis 8 og 1200 ved deploy.
 Gjeldende mål brukes også ved beregning av live gruppestreak for tidligere uker; publiserte
 arkivrapporter beholder målene og tallene som ble lagret ved publisering.
 

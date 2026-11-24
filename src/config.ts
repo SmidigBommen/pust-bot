@@ -25,7 +25,7 @@ export function loadConfig(): Config {
     pustChannelId: required("SLACK_PUST_CHANNEL_ID"),
     databasePath: process.env.DATABASE_PATH ?? "./data/pust.sqlite",
     groupMemberCount: numberSetting("PUST_GROUP_MEMBER_COUNT", 14),
-    weeklyParticipantGoal: numberSetting("PUST_WEEKLY_PARTICIPANT_GOAL", 7),
+    weeklyParticipantGoal: numberSetting("PUST_WEEKLY_PARTICIPANT_GOAL", 8),
     weeklyMinutesGoal: numberSetting("PUST_WEEKLY_MINUTES_GOAL", 1200),
     healthPort: numberSetting("HEALTH_PORT", 3000),
     weeklyRecapEnabled: booleanSetting("PUST_WEEKLY_RECAP_ENABLED", false),

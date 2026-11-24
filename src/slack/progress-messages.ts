@@ -47,12 +47,11 @@ export function personalStatusMessage(
   const achievementLine =
     earned.length === 0
       ? null
-      : `🏅 Prestasjoner: ${earned.map((key) => `*${achievements[key].name}*`).join(" · ")}`;
+      : `🏅 ${earned.map((key) => `*${achievements[key].name}*`).join(" · ")}`;
   return [
-    `⚡ *Dine Sparks: ${formatNumber(totalSparks)}*`,
-    currentLevel,
+    `⚡ *${formatNumber(totalSparks)} Sparks* · ${currentLevel}`,
     next,
-    personalStreak > 0 ? `🔥 Personlig streak: *${personalStreak} uker*` : "Registrer aktivitet denne uken for å starte en streak.",
+    personalStreak > 0 ? `🔥 Streak: *${personalStreak} uker*` : "Registrer aktivitet denne uken for å starte en streak.",
     achievementLine,
   ]
     .filter((line): line is string => line !== null)

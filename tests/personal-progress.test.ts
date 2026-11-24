@@ -71,16 +71,15 @@ describe("personal progress and records", () => {
     expect(await personalCommand()).not.toContain("Personlige rekorder");
     repository.create({ participantSlackId: "U1", registeredBySlackId: "U1", type: "run", minutes: 60, distanceKm: 8.25, activityDate: "2025-01-01" });
     const text = await personalCommand();
-    expect(text).toContain("*Personlige rekorder i Pust*");
-    expect(text).toContain("*Løping* · Lengste økt: 60 minutter · Lengste distanse: 8,25 km");
+    expect(text).toContain("*Personlige rekorder i Pust*\nLengste økt og distanse per aktivitet\n🏃 60 min · 8,25 km");
     expect(client.chat.postMessage).not.toHaveBeenCalled();
   });
 
   it("shows a first baseline and ties without celebrating them", async () => {
     await submit();
     expect(client.chat.postMessage.mock.calls[0]![0].text).not.toContain("Ny personlig rekord");
-    expect(await personalCommand()).toContain("*Løping* · Lengste økt: 40 minutter");
-    expect(await personalCommand()).not.toContain("Lengste distanse");
+    expect(await personalCommand()).toContain("🏃 40 min");
+    expect(await personalCommand()).not.toContain(" km");
     await submit();
     expect(client.chat.postMessage.mock.calls[1]![0].text).not.toContain("Ny personlig rekord");
   });
@@ -101,10 +100,10 @@ describe("personal progress and records", () => {
     expect(post.text).toContain("+20 Sparks i rekordbonus");
     if (withImage) expect(post.blocks[0].text.text).toBe(post.text);
     const status = await personalCommand();
-    expect(status).toContain("*Løping* · Lengste økt: 40 minutter · Lengste distanse: 8,25 km");
+    expect(status).toContain("🏃 40 min · 8,25 km");
     expect(client.chat.postEphemeral).toHaveBeenCalledExactlyOnceWith({ channel: "CPUST", user: "U1", text: status });
     expect(repository.totalSparksForParticipant("U1")).toBe(90);
-    expect(status).toContain("Dine Sparks: 90");
+    expect(status).toContain("90 Sparks");
   });
 
   it("assigns assisted records to the participant, using that person's history", async () => {
@@ -113,8 +112,8 @@ describe("personal progress and records", () => {
     await submit(LOG_ACTIVITY_CALLBACK_ID, { ...values, participant: { value: { selected_user: "U2" } } });
     expect(client.chat.postMessage.mock.calls[0]![0].text).toContain("Ny personlig rekord i løping!");
     expect(client.chat.postMessage.mock.calls[0]![0].text).toContain("Registrert med hjelp fra <@U1>");
-    expect(await personalCommand("U2")).toContain("Lengste økt: 40 minutter");
-    expect(await personalCommand("U1")).toContain("Lengste økt: 100 minutter");
+    expect(await personalCommand("U2")).toContain("🏃 40 min");
+    expect(await personalCommand("U1")).toContain("🏃 100 min");
     expect(client.chat.postEphemeral).not.toHaveBeenCalled();
     expect(client.chat.postMessage).toHaveBeenCalledTimes(2);
     expect(client.chat.postMessage).toHaveBeenLastCalledWith({
@@ -127,7 +126,7 @@ describe("personal progress and records", () => {
     repository.create({ participantSlackId: "U1", registeredBySlackId: "U1", type: "run", minutes: 30, activityDate: "2026-09-24" });
     await submit(LOG_ACTIVITY_CALLBACK_ID, { ...values, minutes: { value: { value: "60" } } });
     const status = await personalCommand();
-    expect(status).toContain("Dine Sparks: 100");
+    expect(status).toContain("100 Sparks");
     expect(status).toContain("Nivå 2: *Medvind*");
     expect(client.chat.postEphemeral.mock.calls[0]![0].text).toBe(status);
   });
@@ -138,15 +137,15 @@ describe("personal progress and records", () => {
     const activity = repository.listRecentForParticipant("U1")[0]!;
     client.chat.postEphemeral.mockClear();
     await submit(EDIT_ACTIVITY_CALLBACK_ID, { ...values, minutes: { value: { value: "20" } } }, activity.id);
-    expect(await personalCommand()).toContain("*Løping* · Lengste økt: 30 minutter · Lengste distanse: 6,5 km");
+    expect(await personalCommand()).toContain("🏃 30 min · 6,5 km");
     expect(client.chat.update.mock.calls[0]![0].text).not.toContain("Ny personlig rekord");
     expect(client.chat.update.mock.calls[0]![0].text).not.toContain("rekordbonus");
     expect(repository.totalSparksForParticipant("U1")).toBe(50);
     await submit(EDIT_ACTIVITY_CALLBACK_ID, { ...values, activity_type: { value: { selected_option: { value: "mobility" } } } }, activity.id);
-    expect(await personalCommand()).toContain("*Yoga eller bevegelighet* · Lengste økt: 40 minutter");
-    expect(await personalCommand()).toContain("*Løping* · Lengste økt: 30 minutter · Lengste distanse: 6,5 km");
+    expect(await personalCommand()).toContain("🧘 40 min");
+    expect(await personalCommand()).toContain("🏃 30 min · 6,5 km");
     await submit(DELETE_ACTIVITY_CALLBACK_ID, { activity: { value: { selected_option: { value: activity.id } } } });
-    expect(await personalCommand()).not.toContain("Yoga eller bevegelighet");
+    expect(await personalCommand()).not.toContain("🧘");
     const remaining = repository.listRecentForParticipant("U1")[0]!;
     await submit(DELETE_ACTIVITY_CALLBACK_ID, { activity: { value: { selected_option: { value: remaining.id } } } });
     expect(await personalCommand()).not.toContain("Personlige rekorder");
@@ -163,9 +162,9 @@ describe("personal progress and records", () => {
     });
     expect(client.chat.postMessage.mock.calls[1]![0].text).not.toContain("Ny personlig rekord");
     vi.setSystemTime(new Date("2026-10-01T21:59:59Z"));
-    expect(await personalCommand()).toContain("Lengste økt: 40 minutter");
+    expect(await personalCommand()).toContain("🏃 40 min");
     vi.setSystemTime(new Date("2026-10-01T22:00:00Z"));
-    expect(await personalCommand()).toContain("Lengste økt: 60 minutter");
+    expect(await personalCommand()).toContain("🏃 60 min");
     expect(client.chat.postMessage).toHaveBeenCalledTimes(2);
   });
 
@@ -176,14 +175,12 @@ describe("personal progress and records", () => {
     await submit(LOG_ACTIVITY_CALLBACK_ID, stateValues);
     const text = await personalCommand();
     expect(client.chat.postEphemeral).toHaveBeenCalledExactlyOnceWith({ channel: "CPUST", user: "U1", text });
-    expect(text).toContain("Dine Sparks: 300");
-    expect(text).toContain("Nivå 3: *Stifinner*");
+    expect(text).toContain("⚡ *300 Sparks* · Nivå 3: *Stifinner*\n");
     expect(text).toContain("400 Sparks til *Turkamerat*");
-    expect(text).toContain("Personlig streak: *3 uker*");
-    expect(text).toContain("*Ny sti*");
-    expect(text).toContain("*Første pust*");
+    expect(text).toContain("Streak: *3 uker*");
+    expect(text).toContain("🏅 *Første pust* · *Ny sti*");
     expect(client.chat.postMessage).toHaveBeenCalledOnce();
-    expect(client.chat.postMessage.mock.calls[0]![0].text).not.toContain("Dine Sparks");
+    expect(client.chat.postMessage.mock.calls[0]![0].text).not.toContain("Nivå 3");
     expect(repository.listRecentForParticipant("U1")[0]?.slackMessageTs).toBe("123.456");
   });
 
